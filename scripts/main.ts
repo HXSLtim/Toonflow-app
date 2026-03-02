@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, dialog } from "electron";
 import path from "path";
 import startServe, { closeServe } from "src/app";
 import { number } from "zod";
@@ -35,11 +35,29 @@ function createMainWindow(port: any): void {
 app.whenReady().then(async () => {
   try {
     const port = await startServe(false);
-    createMainWindow(60000);
+    createMainWindow(port);
   } catch (err) {
     console.error("[服务启动失败]:", err);
-    // 如果服务启动失败，使用默认端口创建窗口
-    createMainWindow(defaultPort);
+
+    // 显示错误对话框
+    const result = await dialog.showMessageBox({
+      type: "error",
+      title: "服务启动失败",
+      message: "后端服务启动失败，应用可能无法正常工作",
+      detail: `错误信息：${err instanceof Error ? err.message : String(err)}\n\n可能的原因：\n- 端口 ${defaultPort} 已被占用\n- 缺少必要的依赖\n- 权限不足`,
+      buttons: ["重试", "退出"],
+      defaultId: 0,
+      cancelId: 1
+    });
+
+    if (result.response === 0) {
+      // 用户选择重试
+      app.relaunch();
+      app.quit();
+    } else {
+      // 用户选择退出
+      app.quit();
+    }
   }
 });
 

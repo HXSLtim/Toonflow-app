@@ -1,5 +1,6 @@
 import { Knex } from "knex";
 import { v4 as uuid } from "uuid";
+import bcrypt from "bcrypt";
 interface TableSchema {
   name: string;
   builder: (table: Knex.CreateTableBuilder) => void;
@@ -18,7 +19,9 @@ export default async (knex: Knex, forceInit: boolean = false): Promise<void> => 
         table.unique(["id"]);
       },
       initData: async (knex) => {
-        await knex("t_user").insert([{ id: 1, name: "admin", password: "admin123" }]);
+        // 使用 bcrypt 加密默认密码
+        const hashedPassword = await bcrypt.hash("admin123", 10);
+        await knex("t_user").insert([{ id: 1, name: "admin", password: hashedPassword }]);
       },
     },
     {
