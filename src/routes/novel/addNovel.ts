@@ -22,16 +22,19 @@ export default router.post(
   async (req, res) => {
     const { projectId, data } = req.body;
 
-    for (const item of data) {
-      await u.db("t_novel").insert({
-        projectId,
-        chapterIndex: item.index,
-        reel: item.reel,
-        chapter: item.chapter,
-        chapterData: item.chapterData,
-        createTime: Date.now(),
-      });
-    }
+    // 使用数据库事务确保数据一致性
+    await u.db.transaction(async (trx) => {
+      for (const item of data) {
+        await trx("t_novel").insert({
+          projectId,
+          chapterIndex: item.index,
+          reel: item.reel,
+          chapter: item.chapter,
+          chapterData: item.chapterData,
+          createTime: Date.now(),
+        });
+      }
+    });
 
     res.status(200).send(success({ message: "新增原文成功" }));
   }

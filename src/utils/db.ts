@@ -38,6 +38,14 @@ const db = knex({
     filename: dbPath,
   },
   useNullAsDefault: true,
+  pool: {
+    min: 2,
+    max: 10,
+    afterCreate: (conn: any, done: any) => {
+      // 启用 WAL 模式以提高并发性能
+      conn.run('PRAGMA journal_mode = WAL;', done);
+    },
+  },
 });
 
 (async () => {

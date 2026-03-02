@@ -217,27 +217,59 @@ export default class OutlineScript {
   }
 
   private async saveOutlineData(episodes: EpisodeData[], overwrite: boolean, startEpisode?: number) {
-    if (overwrite) {
-      const cleared = await this.clearOutlinesAndScripts();
-      if (cleared > 0) {
-        this.log("清理旧数据", `删除了 ${cleared} 条大纲及关联剧本`);
+    // 使用数据库事务确保数据一致性
+    const result = await u.db.transaction(async (trx) => {
+      if (overwrite) {
+        // 在事务中清理旧数据
+        const outlines = await trx("t_outline").select("id").where({ projectId: this.projectId });
+        if (outlines.length > 0) {
+          const outlineIds = outlines.map((o) => o.id);
+          await trx("t_script").whereIn("outlineId", outlineIds).del();
+          await trx("t_outline").where({ projectId: this.projectId }).del();
+          this.log("清理旧数据", `删除了 ${outlines.length} 条大纲及关联剧本`);
+        }
       }
-    }
 
-    const actualStart = overwrite ? 1 : (startEpisode ?? (await this.getMaxEpisode()) + 1);
-    const insertedCount = await this.insertOutlines(episodes, actualStart);
+      const actualStart = overwrite ? 1 : (startEpisode ?? (await this.getMaxEpisode()) + 1);
 
-    const newOutlines = await u
-      .db("t_outline")
-      .select("id", "data")
-      .where({ projectId: this.projectId })
-      .orderBy("episode", "desc")
-      .limit(insertedCount);
+      // 插入新大纲
+      const insertList = episodes.map((ep, idx) => ({
+        projectId: this.projectId,
+        data: JSON.stringify({ ...ep, episodeIndex: actualStart + idx }),
+        episode: actualStart + idx,
+      }));
+      await trx("t_outline").insert(insertList);
+      const insertedCount = insertList.length;
 
-    const scriptCount = await this.createEmptyScripts(newOutlines as Array<{ id: number; data: string }>);
+      // 获取新插入的大纲
+      const newOutlines = await trx("t_outline")
+        .select("id", "data")
+        .where({ projectId: this.projectId })
+        .orderBy("episode", "desc")
+        .limit(insertedCount);
+
+      // 创建空剧本
+      const scripts = newOutlines.map((item: any) => {
+        const data = this.safeParseJson<Partial<EpisodeData>>(item.data, {});
+        return {
+          name: `第${data.episodeIndex ?? ""}集`,
+          content: "",
+          projectId: this.projectId,
+          outlineId: item.id,
+        };
+      });
+
+      let scriptCount = 0;
+      if (scripts.length > 0) {
+        await trx("t_script").insert(scripts);
+        scriptCount = scripts.length;
+      }
+
+      return { insertedCount, scriptCount };
+    });
 
     this.refresh("outline");
-    return { insertedCount, scriptCount };
+    return result;
   }
 
   private async updateOutlineData(id: number, data: EpisodeData) {
@@ -630,15 +662,24 @@ ${task}
 
     const context = await this.buildFullContext(task);
 
-    const { fullStream } = await u.ai.text.stream(
-      {
-        system: SYSTEM_PROMPTS[agentType],
-        tools: this.getSubAgentTools(),
-        messages: [{ role: "user", content: context }],
-        maxStep: 100,
-      },
-      promptConfig,
-    );
+    // 添加 5 分钟超时机制
+    const AI_TIMEOUT = 5 * 60 * 1000; // 5 分钟
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('AI 调用超时（5分钟）')), AI_TIMEOUT);
+    });
+
+    const { fullStream } = await Promise.race([
+      u.ai.text.stream(
+        {
+          system: SYSTEM_PROMPTS[agentType],
+          tools: this.getSubAgentTools(),
+          messages: [{ role: "user", content: context }],
+          maxStep: 100,
+        },
+        promptConfig,
+      ),
+      timeoutPromise,
+    ]);
 
     let fullResponse = "";
     for await (const item of fullStream) {
@@ -704,15 +745,24 @@ ${task}
 
     const mainPrompts = prompts?.customValue || prompts?.defaultValue || "不论用户说什么，请直接输出Agent配置异常";
 
-    const { fullStream } = await u.ai.text.stream(
-      {
-        system: `${envContext}\n${mainPrompts}`,
-        tools: this.getAllTools(),
-        messages: this.history,
-        maxStep: 100,
-      },
-      promptConfig,
-    );
+    // 添加 5 分钟超时机制
+    const AI_TIMEOUT = 5 * 60 * 1000; // 5 分钟
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('AI 调用超时（5分钟）')), AI_TIMEOUT);
+    });
+
+    const { fullStream } = await Promise.race([
+      u.ai.text.stream(
+        {
+          system: `${envContext}\n${mainPrompts}`,
+          tools: this.getAllTools(),
+          messages: this.history,
+          maxStep: 100,
+        },
+        promptConfig,
+      ),
+      timeoutPromise,
+    ]);
 
     let fullResponse = "";
     for await (const item of fullStream) {

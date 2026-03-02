@@ -56,7 +56,9 @@ function calculateGridLayout(count: number): GridLayoutResult {
  * @returns 分割后的单张图片 Buffer 数组
  */
 export default async (image: Buffer, length: number): Promise<Buffer[]> => {
-  const metadata = await sharp(image).metadata();
+  // 预先解码图片一次，获取原始像素数据
+  const sharpInstance = sharp(image);
+  const metadata = await sharpInstance.metadata();
   const { width: totalWidth, height: totalHeight } = metadata;
 
   if (!totalWidth || !totalHeight) {
@@ -68,6 +70,9 @@ export default async (image: Buffer, length: number): Promise<Buffer[]> => {
   const cellWidth = Math.floor(totalWidth / cols);
   const cellHeight = Math.floor(totalHeight / rows);
 
+  // 预先解码为原始像素数据，避免在循环中重复解码
+  const { data, info } = await sharpInstance.raw().toBuffer({ resolveWithObject: true });
+
   const buffers: Buffer[] = [];
 
   for (let i = 0; i < length; i++) {
@@ -77,7 +82,14 @@ export default async (image: Buffer, length: number): Promise<Buffer[]> => {
     const left = col * cellWidth;
     const top = row * cellHeight;
 
-    const cellBuffer = await sharp(image)
+    // 使用预解码的原始数据进行裁剪，避免重复解码
+    const cellBuffer = await sharp(data, {
+      raw: {
+        width: info.width,
+        height: info.height,
+        channels: info.channels,
+      },
+    })
       .extract({
         left,
         top,
