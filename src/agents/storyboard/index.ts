@@ -412,11 +412,17 @@ ${sections.join("\n\n")}
   });
 
   /**
-   * 执行分镜图生成的具体逻辑（异步并发）
+   * 执行分镜图生成的具体逻辑（限制并发数量）
    * 每个分镜包含多个镜头，所有镜头的提示词合并生成一张宫格图，再分割为单张镜头图片
    */
   async executeShotImageGeneration(shotIds: number[]): Promise<void> {
-    await Promise.all(shotIds.map((shotId) => this.generateSingleShotImage(shotId)));
+    // 使用 p-limit 限制并发数量为 3，防止内存溢出
+    const pLimit = (await import('p-limit')).default;
+    const limit = pLimit(3);
+
+    await Promise.all(
+      shotIds.map((shotId) => limit(() => this.generateSingleShotImage(shotId)))
+    );
   }
 
   /**
@@ -623,15 +629,24 @@ ${task}
 
     const context = await this.buildFullContext(task);
 
-    const { fullStream } = await u.ai.text.stream(
-      {
-        system: SYSTEM_PROMPTS[agentType],
-        tools: this.getSubAgentTools(agentType),
-        messages: [{ role: "user", content: context }],
-        maxStep: 100,
-      },
-      promptConfig,
-    );
+    // 添加 5 分钟超时机制
+    const AI_TIMEOUT = 5 * 60 * 1000; // 5 分钟
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('AI 调用超时（5分钟）')), AI_TIMEOUT);
+    });
+
+    const { fullStream } = await Promise.race([
+      u.ai.text.stream(
+        {
+          system: SYSTEM_PROMPTS[agentType],
+          tools: this.getSubAgentTools(agentType),
+          messages: [{ role: "user", content: context }],
+          maxStep: 100,
+        },
+        promptConfig,
+      ),
+      timeoutPromise,
+    ]);
 
     let fullResponse = "";
     for await (const item of fullStream) {
@@ -699,15 +714,24 @@ ${task}
 
     const mainPrompts = prompts?.customValue || prompts?.defaultValue || "不论用户说什么，请直接输出Agent配置异常";
 
-    const { fullStream } = await u.ai.text.stream(
-      {
-        system: `${envContext}\n${mainPrompts}`,
-        tools: this.getAllTools(),
-        messages: this.history,
-        maxStep: 100,
-      },
-      promptConfig,
-    );
+    // 添加 5 分钟超时机制
+    const AI_TIMEOUT = 5 * 60 * 1000; // 5 分钟
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('AI 调用超时（5分钟）')), AI_TIMEOUT);
+    });
+
+    const { fullStream } = await Promise.race([
+      u.ai.text.stream(
+        {
+          system: `${envContext}\n${mainPrompts}`,
+          tools: this.getAllTools(),
+          messages: this.history,
+          maxStep: 100,
+        },
+        promptConfig,
+      ),
+      timeoutPromise,
+    ]);
 
     let fullResponse = "";
     for await (const item of fullStream) {

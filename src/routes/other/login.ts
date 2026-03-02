@@ -1,6 +1,7 @@
 import express from "express";
 import u from "@/utils";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 import { success, error } from "@/lib/responseFormat";
 import { validateFields } from "@/middleware/middleware";
 import { z } from "zod";
@@ -24,23 +25,25 @@ export default router.post(
     const { username, password } = req.body;
 
     const data = await u.db("t_user").where("name", "=", username).first();
-    if (!data) return res.status(400).send(error("登录失败"));
+    if (!data) return res.status(400).send(error("用户不存在"));
 
-    if (data!.password == password && data!.name == username) {
-      const tokenSecret = await u.db("t_setting").where("userId", data.id).select("tokenKey").first();
-
-      const token = setToken(
-        {
-          id: data!.id,
-          name: data!.name,
-        },
-        "180Days",
-        tokenSecret?.tokenKey as string,
-      );
-
-      return res.status(200).send(success({ token: "Bearer " + token, name: data!.name, id: data!.id }, "登录成功"));
-    } else {
-      return res.status(400).send(error("用户名或密码错误"));
+    // 使用 bcrypt 验证密码
+    const isPasswordValid = await bcrypt.compare(password, data.password);
+    if (!isPasswordValid) {
+      return res.status(400).send(error("密码错误"));
     }
+
+    const tokenSecret = await u.db("t_setting").where("userId", data.id).select("tokenKey").first();
+
+    const token = setToken(
+      {
+        id: data!.id,
+        name: data!.name,
+      },
+      "180Days",
+      tokenSecret?.tokenKey as string,
+    );
+
+    return res.status(200).send(success({ token: "Bearer " + token, name: data!.name, id: data!.id }, "登录成功"));
   },
 );
