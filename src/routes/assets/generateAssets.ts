@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { error, success } from "@/lib/responseFormat";
 import { validateFields } from "@/middleware/middleware";
 import sharp from "sharp";
+import { imageGenerationLimit } from "@/utils/concurrency";
 const router = express.Router();
 interface OutlineItem {
   description: string;
@@ -126,15 +127,18 @@ export default router.post(
     const apiConfig = await u.getPromptAi("assetsImage");
 
     try {
-      const contentStr = await u.ai.image(
-        {
-          systemPrompt,
-          prompt: userPrompt,
-          imageBase64: base64 ? [base64] : [],
-          size: "2K",
-          aspectRatio: "16:9",
-        },
-        apiConfig,
+      // 使用并发控制限制图片生成
+      const contentStr = await imageGenerationLimit(() =>
+        u.ai.image(
+          {
+            systemPrompt,
+            prompt: userPrompt,
+            imageBase64: base64 ? [base64] : [],
+            size: "2K",
+            aspectRatio: "16:9",
+          },
+          apiConfig,
+        )
       );
 
       let insertType;

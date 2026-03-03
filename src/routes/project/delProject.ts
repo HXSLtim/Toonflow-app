@@ -15,13 +15,13 @@ export default router.post(
     const { id } = req.body;
 
     const scriptData = await u.db("t_script").where("projectId", id).select("id");
-    const scriptIds = scriptData.map((item: any) => item.id);
+    const scriptIds = scriptData.map((item) => item.id);
 
     const assetsData = await u.db("t_assets").where("projectId", id).select("id");
-    const assetsIds = assetsData.map((item: any) => item.id);
+    const assetsIds = assetsData.map((item) => item.id);
 
     const videoData = await u.db("t_video").whereIn("scriptId", scriptIds).select("id");
-    const videoIds = videoData.map((item: any) => item.id);
+    const videoIds = videoData.map((item) => item.id);
 
     await u.db("t_project").where("id", id).delete();
     await u.db("t_novel").where("projectId", id).delete();
@@ -50,7 +50,7 @@ export default router.post(
     try {
       await u.oss.deleteDirectory(`${id}/`);
       console.log(`项目 ${id} 的OSS文件夹删除成功`);
-    } catch (error: any) {
+    } catch (error) {
       console.log(`项目 ${id} 没有对应的OSS文件夹，跳过删除`);
     }
 

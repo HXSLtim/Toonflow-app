@@ -3,6 +3,8 @@ import u from "@/utils";
 import { error, success } from "@/lib/responseFormat";
 import { validateFields } from "@/middleware/middleware";
 import { z } from "zod";
+import type { MaxIdResult } from "@/types/common";
+
 const router = express.Router();
 
 // 图片项schema
@@ -42,7 +44,7 @@ export default router.post(
     const { scriptId, projectId, configId, mode, startFrame, endFrame, images, resolution, duration, prompt, audioEnabled } = req.body;
 
     // 生成新ID
-    const maxIdResult: any = await u.db("t_videoConfig").max("id as maxId").first();
+    const maxIdResult = await u.db("t_videoConfig").max("id as maxId").first() as MaxIdResult | undefined;
     const newId = (maxIdResult?.maxId || 0) + 1;
     const now = Date.now();
     const configData = await u.db("t_config").where("id", configId).first();

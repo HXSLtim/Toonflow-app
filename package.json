@@ -21,7 +21,11 @@
     "dev": "nodemon --inspect --exec tsx src/app.ts",
     "lint": "tsc --noEmit",
     "build": "cross-env NODE_ENV=prod tsx scripts/build.ts",
-    "test": "cross-env NODE_ENV=prod node build/app.js",
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --run --coverage",
+    "test:prod": "cross-env NODE_ENV=prod node build/app.js",
     "docker:build": "docker-compose -f docker/docker-compose.yml up -d --build",
     "docker:local": "docker-compose -f docker/docker-compose.local.yml up -d --build",
     "debug:ai": "npx @ai-sdk/devtools",
@@ -45,6 +49,7 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
     "express-ws": "^5.0.2",
     "fast-glob": "^3.3.3",
     "form-data": "^4.0.5",
@@ -70,10 +75,15 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/license-checker": "^25.0.6",
     "@types/morgan": "^1.9.10",
+    "@types/supertest": "^7.2.0",
+    "@vitest/coverage-v8": "^4.0.18",
+    "@vitest/ui": "^4.0.18",
     "cross-env": "^10.1.0",
     "license-checker": "^25.0.1",
     "nodemon": "^3.1.11",
+    "supertest": "^7.2.2",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   }
 }

@@ -2,6 +2,7 @@ import generateImagePromptsTool from "@/agents/storyboard/generateImagePromptsTo
 import u from "@/utils";
 import sharp from "sharp";
 import { z } from "zod";
+import { fileProcessingLimit } from "@/utils/concurrency";
 
 interface AssetItem {
   name: string;
@@ -175,12 +176,22 @@ async function processImages(images: ImageInfo[]): Promise<Buffer[]> {
   let processedBuffers: Buffer[];
 
   if (images.length <= maxImages) {
-    const buffers = await Promise.all(images.map((img) => u.oss.getFile(img.filePath)));
-    processedBuffers = await Promise.all(buffers.map((buffer) => compressImage(buffer)));
+    // 使用并发控制限制文件读取
+    const buffers = await Promise.all(
+      images.map((img) => fileProcessingLimit(() => u.oss.getFile(img.filePath)))
+    );
+    // 使用并发控制限制图片压缩
+    processedBuffers = await Promise.all(
+      buffers.map((buffer) => fileProcessingLimit(() => compressImage(buffer)))
+    );
   } else {
     const mergeStartIndex = maxImages - 1;
-    const firstBuffers = await Promise.all(images.slice(0, mergeStartIndex).map((img) => u.oss.getFile(img.filePath)));
-    const compressedFirstImages = await Promise.all(firstBuffers.map((buffer) => compressImage(buffer)));
+    const firstBuffers = await Promise.all(
+      images.slice(0, mergeStartIndex).map((img) => fileProcessingLimit(() => u.oss.getFile(img.filePath)))
+    );
+    const compressedFirstImages = await Promise.all(
+      firstBuffers.map((buffer) => fileProcessingLimit(() => compressImage(buffer)))
+    );
     const imagesToMergeList = images.slice(mergeStartIndex).map((img) => img.filePath);
     const mergedImage = await mergeImages(imagesToMergeList);
     processedBuffers = [...compressedFirstImages, mergedImage];

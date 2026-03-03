@@ -1,0 +1,20 @@
+{
+  "name": "toonflow-api-docs",
+  "version": "1.0.0",
+  "description": "Toonflow API 文档依赖包",
+  "dependencies": {
+    "swagger-ui-express": "^5.0.0",
+    "yamljs": "^0.3.0",
+    "redoc-express": "^2.1.0"
+  },
+  "devDependencies": {
+    "@apidevtools/swagger-cli": "^4.0.4",
+    "redoc-cli": "^0.13.21"
+  },
+  "scripts": {
+    "validate": "swagger-cli validate docs/api/openapi.yaml",
+    "bundle": "swagger-cli bundle docs/api/openapi.yaml -o docs/api/openapi.bundled.yaml",
+    "generate-html": "redoc-cli bundle docs/api/openapi.yaml -o docs/api/index.html --title 'Toonflow API 文档'",
+    "serve": "redoc-cli serve docs/api/openapi.yaml --watch"
+  }
+}

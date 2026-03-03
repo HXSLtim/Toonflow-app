@@ -3,6 +3,8 @@ import u from "@/utils";
 import { z } from "zod";
 import { success } from "@/lib/responseFormat";
 import { validateFields } from "@/middleware/middleware";
+import type { CountResult } from "@/types/common";
+
 const router = express.Router();
 
 // 获取项目统计
@@ -15,12 +17,12 @@ export default router.post(
     const { projectId } = req.body;
 
     const scripts = await u.db("t_script").where("projectId", projectId).select("id");
-    const scriptIds = scripts.map((item: any) => item.id);
+    const scriptIds = scripts.map((item) => item.id);
 
-    const roleCount: any = await u.db("t_assets").where("projectId", projectId).where("type", "角色").count("* as total").first();
-    const scriptCount: any = await u.db("t_script").where("projectId", projectId).count("* as total").first();
-    const videoCount: any = await u.db("t_video").whereIn("scriptId", scriptIds).count("* as total").first();
-    const storyboardCount: any = await u.db("t_assets").whereIn("scriptId", scriptIds).where("type", "分镜").count("* as total").first();
+    const roleCount = await u.db("t_assets").where("projectId", projectId).where("type", "角色").count("* as total").first() as CountResult | undefined;
+    const scriptCount = await u.db("t_script").where("projectId", projectId).count("* as total").first() as CountResult | undefined;
+    const videoCount = await u.db("t_video").whereIn("scriptId", scriptIds).count("* as total").first() as CountResult | undefined;
+    const storyboardCount = await u.db("t_assets").whereIn("scriptId", scriptIds).where("type", "分镜").count("* as total").first() as CountResult | undefined;
 
     const data = {
       roleCount: roleCount?.total || 0,

@@ -5,6 +5,7 @@ import { validateFields } from "@/middleware/middleware";
 import { z } from "zod";
 import { v4 } from "uuid";
 import axios from "axios";
+import { imageGenerationLimit, batchExecute } from "@/utils/concurrency";
 
 const router = express.Router();
 
@@ -64,10 +65,13 @@ export default router.post(
 
     // 遍历处理每个分镜段
     const processSegment = async (segment: { cells: { id: string; src: string }[] }) => {
-      // 超分所有 cell
-      const cellsWithSuperscore = await Promise.all(
-        segment.cells.map(async (cell) => {
-          const { ossPath } = await superResolutionAndSave(cell.src, projectId, projectData.videoRatio!);
+      // 使用并发控制超分所有 cell
+      const cellsWithSuperscore = await batchExecute(
+        segment.cells,
+        async (cell) => {
+          const { ossPath } = await imageGenerationLimit(() =>
+            superResolutionAndSave(cell.src, projectId, projectData.videoRatio!)
+          );
           return {
             id: cell.id,
             projectId,
@@ -76,7 +80,13 @@ export default router.post(
             src: cell.src,
             type: "分镜",
           };
-        }),
+        },
+        {
+          concurrency: 3, // 限制并发数为 3
+          onProgress: (completed, total) => {
+            console.log(`超分进度: ${completed}/${total}`);
+          },
+        }
       );
       return cellsWithSuperscore;
     };

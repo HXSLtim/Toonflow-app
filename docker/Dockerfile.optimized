@@ -1,0 +1,171 @@
+# 多阶段构建优化版本
+# 构建阶段
+FROM node:24-alpine AS builder
+
+WORKDIR /app
+
+# 定义构建参数
+ARG GIT=github
+ARG TAG=""
+ARG BRANCH=""
+
+# 安装构建依赖
+RUN apk add --no-cache git python3 make g++
+
+# 配置镜像源
+RUN npm config set registry https://registry.npmmirror.com/ && \
+    yarn config set registry https://registry.npmmirror.com/
+
+# 根据参数选择仓库源
+RUN if [ "$GIT" = "gitee" ]; then \
+        REPO_URL="https://gitee.com/HBAI-Ltd/Toonflow-app.git"; \
+    else \
+        REPO_URL="https://github.com/HBAI-Ltd/Toonflow-app.git"; \
+    fi && \
+    echo "Cloning from: $REPO_URL" && \
+    git clone "$REPO_URL" . && \
+    if [ -n "$TAG" ]; then \
+        echo "Checking out specified tag: $TAG" && \
+        git checkout "$TAG"; \
+    elif [ -n "$BRANCH" ]; then \
+        echo "Checking out specified branch: $BRANCH" && \
+        git checkout "$BRANCH"; \
+    else \
+        LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || git tag --sort=-v:refname | head -n 1) && \
+        if [ -n "$LATEST_TAG" ]; then \
+            echo "Checking out latest tag: $LATEST_TAG" && \
+            git checkout "$LATEST_TAG"; \
+        else \
+            echo "No tags found, using default branch"; \
+        fi; \
+    fi && \
+    echo "Current version:" && git describe --tags --always
+
+# 安装依赖（利用缓存层）
+RUN yarn install --frozen-lockfile --production=false
+
+# 构建应用
+RUN yarn build
+
+# 清理开发依赖，只保留生产依赖
+RUN rm -rf node_modules && \
+    yarn install --frozen-lockfile --production
+
+# 生产阶段
+FROM node:24-alpine
+
+WORKDIR /app
+
+# 安装运行时依赖
+RUN apk add --no-cache \
+    nginx \
+    supervisor \
+    wget \
+    tini && \
+    mkdir -p /var/lib/nginx/logs /var/log/nginx /run/nginx && \
+    npm install -g pm2@latest
+
+# 创建非 root 用户
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+# 复制后端文件
+COPY --from=builder --chown=nodejs:nodejs /app/build ./build
+COPY --from=builder --chown=nodejs:nodejs /app/package.json ./
+COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
+
+# 复制静态页面到 nginx 目录
+COPY --from=builder /app/scripts/web /usr/share/nginx/html
+
+# 配置 nginx
+RUN cat > /etc/nginx/http.d/default.conf << 'EOF'
+server {
+    listen 80;
+    server_name _;
+
+    # 安全头
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+
+    # Gzip 压缩
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_types text/plain text/css text/xml text/javascript application/javascript application/json;
+
+    location / {
+        root /usr/share/nginx/html;
+        index index.html;
+        try_files $uri $uri/ /index.html;
+    }
+
+    # API 代理（如果需要）
+    location /api {
+        proxy_pass http://localhost:60000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+EOF
+
+# 配置 nginx 主配置
+RUN sed -i 's|error_log /var/log/nginx/error.log warn;|error_log /dev/stderr warn;|g' /etc/nginx/nginx.conf || true && \
+    sed -i 's|access_log /var/log/nginx/access.log main;|access_log /dev/stdout main;|g' /etc/nginx/nginx.conf || true && \
+    sed -i 's|user nginx;|user nodejs;|g' /etc/nginx/nginx.conf
+
+# 配置 supervisor
+RUN cat > /etc/supervisord.conf << 'EOF'
+[supervisord]
+nodaemon=true
+user=root
+logfile=/dev/stdout
+logfile_maxbytes=0
+pidfile=/var/run/supervisord.pid
+
+[program:nginx]
+command=nginx -g "daemon off;"
+autostart=true
+autorestart=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+priority=10
+
+[program:app]
+command=pm2-runtime start build/app.js --name toonflow-app --max-memory-restart 500M
+directory=/app
+user=nodejs
+autostart=true
+autorestart=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+environment=NODE_ENV=prod
+priority=20
+EOF
+
+# 设置权限
+RUN chown -R nodejs:nodejs /app && \
+    chown -R nodejs:nodejs /var/lib/nginx && \
+    chown -R nodejs:nodejs /var/log/nginx
+
+ENV NODE_ENV=prod \
+    NODE_OPTIONS="--max-old-space-size=512"
+
+EXPOSE 80 60000
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD wget --quiet --tries=1 --spider http://localhost:80/ || exit 1
+
+# 使用 tini 作为 init 进程
+ENTRYPOINT ["/sbin/tini", "--"]
+
+# 启动命令
+CMD ["sh", "-c", "mkdir -p /var/log/nginx /var/lib/nginx/logs /run/nginx && exec supervisord -c /etc/supervisord.conf"]

@@ -6,19 +6,15 @@ import knex from "knex";
 import initDB from "@/lib/initDB";
 import fixDB from "@/lib/fixDB";
 import type { DB } from "@/types/database";
+import type { SqliteConnection, DbConnectionCallback } from "@/types/common";
 import crypto from "crypto";
+import { getDbPath } from "./pathResolver";
+import { DATABASE_CONFIG } from "@/constants";
 
 type TableName = keyof DB & string;
 type RowType<TName extends TableName> = DB[TName];
 
-let dbPath: string;
-if (typeof process.versions?.electron !== "undefined") {
-  const { app } = require("electron");
-  const userDataDir: string = app.getPath("userData");
-  dbPath = path.join(userDataDir, "db.sqlite");
-} else {
-  dbPath = path.join(process.cwd(), "db.sqlite");
-}
+const dbPath = getDbPath();
 console.log("数据库目录:", dbPath);
 const dbDir = path.dirname(dbPath);
 
@@ -39,11 +35,23 @@ const db = knex({
   },
   useNullAsDefault: true,
   pool: {
-    min: 2,
-    max: 10,
-    afterCreate: (conn: any, done: any) => {
+    min: 5,
+    max: 20,
+    acquireTimeoutMillis: 10000,
+    idleTimeoutMillis: 30000,
+    afterCreate: (conn: SqliteConnection, done: DbConnectionCallback) => {
       // 启用 WAL 模式以提高并发性能
-      conn.run('PRAGMA journal_mode = WAL;', done);
+      conn.run('PRAGMA journal_mode = WAL;', (err?: Error) => {
+        if (err) return done(err);
+        // 优化 SQLite 性能参数
+        conn.run('PRAGMA synchronous = NORMAL;', (err?: Error) => {
+          if (err) return done(err);
+          conn.run('PRAGMA cache_size = -64000;', (err?: Error) => {
+            if (err) return done(err);
+            conn.run('PRAGMA temp_store = MEMORY;', done);
+          });
+        });
+      });
     },
   },
 });
@@ -51,6 +59,8 @@ const db = knex({
 (async () => {
   await initDB(db);
   await fixDB(db);
+  const addIndexes = (await import("@/lib/addIndexes")).default;
+  await addIndexes(db);
   if (process.env.NODE_ENV == "dev") initKnexType(db);
 })();
 

@@ -53,6 +53,7 @@ export default class Storyboard {
   readonly emitter = new EventEmitter();
   history: ModelMessage[] = [];
   novelChapters: DB["t_novel"][] = [];
+  private promptCache = new Map<string, string>(); // 提示词缓存
 
   // 存储 segmentAgent 生成的片段结果
   private segments: Segment[] = [];
@@ -99,6 +100,25 @@ export default class Storyboard {
   private log(action: string, detail?: string) {
     const msg = detail ? `${action}: ${detail}` : action;
     console.log(`\n[${new Date().toLocaleTimeString()}] ${msg}\n`);
+  }
+
+  // 提示词缓存获取
+  private async getPrompt(code: string): Promise<string> {
+    if (this.promptCache.has(code)) {
+      return this.promptCache.get(code)!;
+    }
+
+    const prompt = await u.db("t_prompts").where("code", code).first();
+    const value = prompt?.customValue || prompt?.defaultValue || "";
+    this.promptCache.set(code, value);
+    return value;
+  }
+
+  // 上下文管理：限制历史消息长度
+  private trimHistory(maxMessages: number = 20) {
+    if (this.history.length > maxMessages) {
+      this.history = this.history.slice(-maxMessages);
+    }
   }
 
   // ==================== 剧本相关操作 ====================
@@ -629,24 +649,17 @@ ${task}
 
     const context = await this.buildFullContext(task);
 
-    // 添加 5 分钟超时机制
-    const AI_TIMEOUT = 5 * 60 * 1000; // 5 分钟
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('AI 调用超时（5分钟）')), AI_TIMEOUT);
-    });
-
-    const { fullStream } = await Promise.race([
-      u.ai.text.stream(
-        {
-          system: SYSTEM_PROMPTS[agentType],
-          tools: this.getSubAgentTools(agentType),
-          messages: [{ role: "user", content: context }],
-          maxStep: 100,
-        },
-        promptConfig,
-      ),
-      timeoutPromise,
-    ]);
+    // 使用可配置的超时（默认 5 分钟）
+    const { fullStream } = await u.ai.text.stream(
+      {
+        system: SYSTEM_PROMPTS[agentType],
+        tools: this.getSubAgentTools(agentType),
+        messages: [{ role: "user", content: context }],
+        maxStep: 100,
+        timeout: 5 * 60 * 1000, // 5 分钟超时
+      },
+      promptConfig,
+    );
 
     let fullResponse = "";
     for await (const item of fullStream) {
@@ -707,31 +720,27 @@ ${task}
       content: msg,
     });
 
+    // 限制历史消息长度
+    this.trimHistory(20);
+
     const envContext = await this.buildEnvironmentContext();
 
-    const prompts = await u.db("t_prompts").where("code", "storyboard-main").first();
+    // 使用缓存获取提示词
+    const mainPrompts = await this.getPrompt("storyboard-main") || "不论用户说什么，请直接输出Agent配置异常";
     const promptConfig = await u.getPromptAi("storyboardAgent");
 
-    const mainPrompts = prompts?.customValue || prompts?.defaultValue || "不论用户说什么，请直接输出Agent配置异常";
-
-    // 添加 5 分钟超时机制
-    const AI_TIMEOUT = 5 * 60 * 1000; // 5 分钟
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('AI 调用超时（5分钟）')), AI_TIMEOUT);
-    });
-
-    const { fullStream } = await Promise.race([
-      u.ai.text.stream(
-        {
-          system: `${envContext}\n${mainPrompts}`,
-          tools: this.getAllTools(),
-          messages: this.history,
-          maxStep: 100,
-        },
-        promptConfig,
-      ),
-      timeoutPromise,
-    ]);
+    // 使用可配置的超时和重试
+    const { fullStream } = await u.ai.text.stream(
+      {
+        system: `${envContext}\n${mainPrompts}`,
+        tools: this.getAllTools(),
+        messages: this.history,
+        maxStep: 100,
+        timeout: 5 * 60 * 1000, // 5 分钟超时
+        retries: 3, // 3 次重试
+      },
+      promptConfig,
+    );
 
     let fullResponse = "";
     for await (const item of fullStream) {

@@ -1,0 +1,27 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Toonflow API",
+    "description": "Toonflow AI 短剧创作平台 REST API 文档",
+    "version": "1.0.7",
+    "contact": {
+      "name": "HBAI-Ltd",
+      "email": "ltlctools@outlook.com",
+      "url": "https://github.com/HBAI-Ltd/Toonflow-app"
+    },
+    "license": {
+      "name": "AGPL-3.0",
+      "url": "https://www.gnu.org/licenses/agpl-3.0.html"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:60000",
+      "description": "开发环境"
+    },
+    {
+      "url": "http://your-domain:60000",
+      "description": "生产环境"
+    }
+  ]
+}

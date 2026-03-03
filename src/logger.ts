@@ -1,21 +1,14 @@
 import * as fs from "fs";
 import * as path from "path";
+import { getLogsDir } from "@/utils/pathResolver";
+import { FILE_SIZE_LIMITS } from "@/constants";
 
 type LogLevel = "log" | "info" | "warn" | "error" | "debug";
 type ConsoleMethod = (...args: unknown[]) => void;
 
-function getLogDir(): string {
-  const isElectron = typeof process.versions?.electron !== "undefined";
-  if (isElectron) {
-    const { app } = require("electron");
-    return path.join(app.getPath("userData"), "logs");
-  }
-  return path.join(process.cwd(), "logs");
-}
-
-const LOG_DIR = getLogDir();
+const LOG_DIR = getLogsDir();
 const LOG_FILE = path.join(LOG_DIR, "app.log");
-const MAX_SIZE = 1000 * 1024 * 1024;
+const MAX_SIZE = FILE_SIZE_LIMITS.LOG_FILE_MAX_SIZE;
 const LEVELS: LogLevel[] = ["log", "info", "warn", "error", "debug"];
 
 class Logger {

@@ -1,0 +1,959 @@
+openapi: 3.0.3
+info:
+  title: Toonflow API
+  description: |
+    Toonflow AI 短剧创作平台 REST API 文档
+
+    ## 认证
+    大部分接口需要 JWT Token 认证，在请求头中添加：
+    ```
+    Authorization: Bearer <your-token>
+    ```
+
+    ## 基础 URL
+    - 开发环境: `http://localhost:60000`
+    - 生产环境: `http://your-domain:60000`
+
+    ## 响应格式
+    所有接口返回统一格式：
+    ```json
+    {
+      "code": 200,
+      "message": "成功",
+      "data": {}
+    }
+    ```
+
+    ## 错误码
+    - 200: 成功
+    - 400: 请求参数错误
+    - 401: 未授权
+    - 403: 禁止访问
+    - 404: 资源不存在
+    - 500: 服务器错误
+
+  version: 1.0.7
+  contact:
+    name: HBAI-Ltd
+    email: ltlctools@outlook.com
+    url: https://github.com/HBAI-Ltd/Toonflow-app
+  license:
+    name: AGPL-3.0
+    url: https://www.gnu.org/licenses/agpl-3.0.html
+
+servers:
+  - url: http://localhost:60000
+    description: 开发环境
+  - url: http://your-domain:60000
+    description: 生产环境
+
+tags:
+  - name: Auth
+    description: 认证相关接口
+  - name: Project
+    description: 项目管理
+  - name: Novel
+    description: 小说管理
+  - name: Outline
+    description: 大纲管理
+  - name: Script
+    description: 剧本管理
+  - name: Storyboard
+    description: 分镜管理
+  - name: Assets
+    description: 素材管理
+  - name: Video
+    description: 视频管理
+  - name: Costume
+    description: 角色服化道管理
+  - name: Batch
+    description: 批量处理
+  - name: Format
+    description: 格式转换
+  - name: Setting
+    description: 系统设置
+  - name: User
+    description: 用户管理
+  - name: Task
+    description: 任务管理
+  - name: Prompt
+    description: 提示词管理
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT Token 认证
+
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: 成功
+        data:
+          type: object
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: 请求参数错误
+        data:
+          type: object
+          nullable: true
+
+    Project:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: 我的短剧项目
+        intro:
+          type: string
+          example: 项目简介
+        type:
+          type: string
+          example: 短剧
+        artStyle:
+          type: string
+          example: 写实风格
+        videoRatio:
+          type: string
+          example: "16:9"
+        userId:
+          type: integer
+          example: 1
+        createTime:
+          type: integer
+          example: 1709481600000
+
+    Novel:
+      type: object
+      properties:
+        id:
+          type: integer
+        projectId:
+          type: integer
+        chapter:
+          type: string
+          example: 第一章
+        chapterData:
+          type: string
+          example: 章节内容...
+        chapterIndex:
+          type: integer
+          example: 1
+        reel:
+          type: string
+          example: 卷一
+        createTime:
+          type: integer
+
+    Outline:
+      type: object
+      properties:
+        id:
+          type: integer
+        projectId:
+          type: integer
+        episode:
+          type: integer
+          example: 1
+        data:
+          type: string
+          example: 大纲内容...
+
+    Script:
+      type: object
+      properties:
+        id:
+          type: integer
+        projectId:
+          type: integer
+        outlineId:
+          type: integer
+        name:
+          type: string
+          example: 第一集
+        content:
+          type: string
+          example: 剧本内容...
+
+    Assets:
+      type: object
+      properties:
+        id:
+          type: integer
+        projectId:
+          type: integer
+        scriptId:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+          enum: [image, video, audio]
+        filePath:
+          type: string
+        prompt:
+          type: string
+        videoPrompt:
+          type: string
+        state:
+          type: string
+        episode:
+          type: string
+        shotIndex:
+          type: integer
+        duration:
+          type: string
+        intro:
+          type: string
+        remark:
+          type: string
+
+    Video:
+      type: object
+      properties:
+        id:
+          type: integer
+        scriptId:
+          type: integer
+        configId:
+          type: integer
+        aiConfigId:
+          type: integer
+        model:
+          type: string
+        prompt:
+          type: string
+        filePath:
+          type: string
+        firstFrame:
+          type: string
+        storyboardImgs:
+          type: string
+        resolution:
+          type: string
+        state:
+          type: integer
+        time:
+          type: integer
+        errorReason:
+          type: string
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        password:
+          type: string
+
+paths:
+  /other/login:
+    post:
+      tags:
+        - Auth
+      summary: 用户登录
+      description: 使用用户名和密码登录，获取 JWT Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+                - captcha
+              properties:
+                username:
+                  type: string
+                  example: admin
+                password:
+                  type: string
+                  example: admin123
+                captcha:
+                  type: string
+                  example: "1234"
+      responses:
+        '200':
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: 登录成功
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                      user:
+                        $ref: '#/components/schemas/User'
+        '401':
+          description: 认证失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /other/getCaptcha:
+    get:
+      tags:
+        - Auth
+      summary: 获取验证码
+      description: 获取登录验证码图片
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      captcha:
+                        type: string
+                        example: data:image/svg+xml;base64,...
+
+  /project/addProject:
+    post:
+      tags:
+        - Project
+      summary: 创建项目
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  example: 我的短剧项目
+                intro:
+                  type: string
+                  example: 项目简介
+                type:
+                  type: string
+                  example: 短剧
+                artStyle:
+                  type: string
+                  example: 写实
+                videoRatio:
+                  type: string
+                  example: "16:9"
+      responses:
+        '200':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: 创建成功
+                  data:
+                    $ref: '#/components/schemas/Project'
+
+  /project/getProject:
+    get:
+      tags:
+        - Project
+      summary: 获取项目列表
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      list:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Project'
+                      total:
+                        type: integer
+                        example: 100
+
+  /project/getSingleProject:
+    get:
+      tags:
+        - Project
+      summary: 获取单个项目
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  data:
+                    $ref: '#/components/schemas/Project'
+
+  /project/updateProject:
+    post:
+      tags:
+        - Project
+      summary: 更新项目
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+              properties:
+                id:
+                  type: integer
+                name:
+                  type: string
+                intro:
+                  type: string
+                type:
+                  type: string
+                artStyle:
+                  type: string
+                videoRatio:
+                  type: string
+      responses:
+        '200':
+          description: 更新成功
+
+  /project/delProject:
+    post:
+      tags:
+        - Project
+      summary: 删除项目
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+              properties:
+                id:
+                  type: integer
+      responses:
+        '200':
+          description: 删除成功
+
+  /novel/addNovel:
+    post:
+      tags:
+        - Novel
+      summary: 添加小说章节
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - projectId
+                - chapter
+                - chapterData
+              properties:
+                projectId:
+                  type: integer
+                chapter:
+                  type: string
+                chapterData:
+                  type: string
+                chapterIndex:
+                  type: integer
+                reel:
+                  type: string
+      responses:
+        '200':
+          description: 添加成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  data:
+                    $ref: '#/components/schemas/Novel'
+
+  /novel/getNovel:
+    get:
+      tags:
+        - Novel
+      summary: 获取小说列表
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Novel'
+
+  /outline/agentsOutline:
+    post:
+      tags:
+        - Outline
+      summary: AI 生成大纲
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - projectId
+                - novelIds
+              properties:
+                projectId:
+                  type: integer
+                novelIds:
+                  type: array
+                  items:
+                    type: integer
+                  example: [1, 2, 3]
+      responses:
+        '200':
+          description: 生成成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  data:
+                    $ref: '#/components/schemas/Outline'
+
+  /script/generateScriptApi:
+    post:
+      tags:
+        - Script
+      summary: 生成剧本
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - projectId
+                - outlineId
+              properties:
+                projectId:
+                  type: integer
+                outlineId:
+                  type: integer
+                scriptName:
+                  type: string
+      responses:
+        '200':
+          description: 生成成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  data:
+                    $ref: '#/components/schemas/Script'
+
+  /storyboard/generateStoryboardApi:
+    post:
+      tags:
+        - Storyboard
+      summary: 生成分镜
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - scriptId
+                - projectId
+              properties:
+                scriptId:
+                  type: integer
+                projectId:
+                  type: integer
+      responses:
+        '200':
+          description: 生成成功
+
+  /storyboard/generateShotImage:
+    post:
+      tags:
+        - Storyboard
+      summary: 生成分镜图片
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - assetsId
+                - projectId
+              properties:
+                assetsId:
+                  type: integer
+                projectId:
+                  type: integer
+      responses:
+        '200':
+          description: 生成成功
+
+  /video/generateVideo:
+    post:
+      tags:
+        - Video
+      summary: 生成视频
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - configId
+                - projectId
+              properties:
+                configId:
+                  type: integer
+                projectId:
+                  type: integer
+      responses:
+        '200':
+          description: 生成成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  data:
+                    $ref: '#/components/schemas/Video'
+
+  /batch/createBatchTask:
+    post:
+      tags:
+        - Batch
+      summary: 创建批量任务
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - taskType
+                - items
+              properties:
+                taskType:
+                  type: string
+                  enum: [outline, script, storyboard, image, video]
+                  example: image
+                items:
+                  type: array
+                  items:
+                    type: object
+                  example: [{"id": 1}, {"id": 2}]
+                projectId:
+                  type: integer
+      responses:
+        '200':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  data:
+                    type: object
+                    properties:
+                      taskId:
+                        type: string
+                        example: batch_123456
+
+  /batch/getBatchTaskStatus:
+    get:
+      tags:
+        - Batch
+      summary: 获取批量任务状态
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: taskId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  data:
+                    type: object
+                    properties:
+                      taskId:
+                        type: string
+                      status:
+                        type: string
+                        enum: [pending, running, completed, failed]
+                      progress:
+                        type: integer
+                        example: 50
+                      total:
+                        type: integer
+                        example: 100
+                      completed:
+                        type: integer
+                        example: 50
+                      failed:
+                        type: integer
+                        example: 0
+
+  /costume/addCostume:
+    post:
+      tags:
+        - Costume
+      summary: 添加角色服化道
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - projectId
+                - characterName
+              properties:
+                projectId:
+                  type: integer
+                characterName:
+                  type: string
+                  example: 李明
+                description:
+                  type: string
+                  example: 25岁男性，身高180cm...
+                referenceImage:
+                  type: string
+                  example: /uploads/character_ref.jpg
+      responses:
+        '200':
+          description: 添加成功
+
+  /format/detectFormat:
+    post:
+      tags:
+        - Format
+      summary: 检测文本格式
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+              properties:
+                content:
+                  type: string
+                  example: 文本内容...
+      responses:
+        '200':
+          description: 检测成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  data:
+                    type: object
+                    properties:
+                      format:
+                        type: string
+                        enum: [novel, script, comic, game]
+                        example: novel
+                      confidence:
+                        type: number
+                        example: 0.95
+
+  /setting/getAiModelList:
+    get:
+      tags:
+        - Setting
+      summary: 获取 AI 模型列表
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [text, image, video]
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        manufacturer:
+                          type: string
+                        model:
+                          type: string
+                        type:
+                          type: string
+
+  /user/getUser:
+    get:
+      tags:
+        - User
+      summary: 获取用户信息
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  data:
+                    $ref: '#/components/schemas/User'

@@ -3,6 +3,8 @@ import u from "@/utils";
 import { success } from "@/lib/responseFormat";
 import { validateFields } from "@/middleware/middleware";
 import { z } from "zod";
+import type { VideoConfig } from "@/types/common";
+
 const router = express.Router();
 
 // 获取视频配置列表
@@ -21,8 +23,9 @@ export default router.post(
       .where({ scriptId })
       .orderBy("createTime", "desc")
       .select("t_videoConfig.*", "t_config.manufacturer as manufacturer", "t_config.model");
+
     // 解析 JSON 字段
-    const result = configs.map((config: any) => ({
+    const result = configs.map((config) => ({
       id: config.id,
       scriptId: config.scriptId,
       projectId: config.projectId,
@@ -30,15 +33,15 @@ export default router.post(
       manufacturer: config.manufacturer,
       model: config.model,
       mode: config.mode,
-      startFrame: config.startFrame ? JSON.parse(config.startFrame) : null,
-      endFrame: config.endFrame ? JSON.parse(config.endFrame) : null,
-      images: config.images ? JSON.parse(config.images) : [],
+      startFrame: config.startFrame ? JSON.parse(config.startFrame as string) : null,
+      endFrame: config.endFrame ? JSON.parse(config.endFrame as string) : null,
+      images: config.images ? JSON.parse(config.images as string) : [],
       resolution: config.resolution,
       duration: config.duration,
       prompt: config.prompt || "",
       selectedResultId: config.selectedResultId,
       createdAt: config.createTime ? new Date(config.createTime).toISOString() : new Date().toISOString(),
-      audioEnabled:!!config.audioEnabled
+      audioEnabled: !!config.audioEnabled
     }));
 
     res.status(200).send(success(result));

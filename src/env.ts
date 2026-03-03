@@ -3,8 +3,8 @@ import path from "path";
 
 // 默认环境变量（当 env 文件不存在时自动创建）
 const defaultEnvValues: Record<string, string> = {
-  dev: `NODE_ENV=dev\nPORT=60000\nOSSURL=http://127.0.0.1:60000/`,
-  prod: `NODE_ENV=prod\nPORT=60000\nOSSURL=http://127.0.0.1:60000/`,
+  dev: `NODE_ENV=dev\nPORT=60000\nOSSURL=http://127.0.0.1:60000/\nJWT_SECRET=dev-secret-key-change-in-production-min-32-chars\nALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000`,
+  prod: `NODE_ENV=prod\nPORT=60000\nOSSURL=http://127.0.0.1:60000/\nJWT_SECRET=CHANGE_THIS_IN_PRODUCTION_MIN_32_CHARS\nALLOWED_ORIGINS=https://your-domain.com`,
 };
 
 // 判断是否为打包后的 Electron 环境
@@ -47,4 +47,13 @@ if (!env) {
     if (idx > 0) process.env[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
   }
   console.log(`[环境变量] ${env}`);
+
+  // 验证必需的安全配置
+  if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+    console.error("[安全错误] JWT_SECRET 必须至少 32 个字符");
+    process.exit(1);
+  }
+  if (process.env.JWT_SECRET.includes("CHANGE_THIS") || process.env.JWT_SECRET.includes("dev-secret")) {
+    console.warn("[安全警告] 生产环境请修改默认的 JWT_SECRET");
+  }
 }

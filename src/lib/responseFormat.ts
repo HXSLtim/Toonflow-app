@@ -1,11 +1,11 @@
-export interface ApiResponse {
+export interface ApiResponse<T = unknown> {
   code: number;
-  data: any;
+  data: T;
   message: string;
 }
 
 // 成功回调
-export function success<T>(data: T | null = null, message: string = "成功"): ApiResponse {
+export function success<T = unknown>(data: T | null = null, message: string = "成功"): ApiResponse<T | null> {
   return {
     code: 200,
     data,
@@ -14,7 +14,7 @@ export function success<T>(data: T | null = null, message: string = "成功"): A
 }
 
 // 客户端错误响应
-export function error<T>(message: string = "", data: T | null = null): ApiResponse {
+export function error<T = unknown>(message: string = "", data: T | null = null): ApiResponse<T | null> {
   return {
     code: 400,
     data,

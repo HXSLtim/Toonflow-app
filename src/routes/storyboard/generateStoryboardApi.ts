@@ -12,14 +12,18 @@ export default router.post(
     filePath: z.object(),
     prompt: z.string(),
     projectId: z.number(),
-    assetsId: z.any(),
+    assetsId: z.number().optional(),
   }),
   async (req, res) => {
     const { filePath, prompt, projectId, assetsId } = req.body;
     //拿到图片尺寸
     const projectInfo = await u.db("t_project").where({ id: projectId }).first();
 
-    let data = await u.editImage(filePath, prompt, projectId,projectInfo?.videoRatio!);
+    if (!projectInfo) {
+      return res.status(404).send({ message: "项目不存在" });
+    }
+
+    let data = await u.editImage(filePath, prompt, projectId, projectInfo.videoRatio || "16:9");
     const returnData: {
       id: number | null;
       url: string | null;
