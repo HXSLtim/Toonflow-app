@@ -39,15 +39,8 @@ export default router.post(
     }
 
     // 删除文件
+    const rootDir = path.join(process.cwd(), "uploads");
     for (const filePath of filesToDelete) {
-      let rootDir: string;
-      if (typeof process.versions?.electron !== "undefined") {
-        const { app } = require("electron");
-        const userDataDir: string = app.getPath("userData");
-        rootDir = path.join(userDataDir, "uploads");
-      } else {
-        rootDir = path.join(process.cwd(), "uploads");
-      }
       try {
         const absolutePath = path.join(rootDir, filePath);
         if (fs.existsSync(absolutePath)) {

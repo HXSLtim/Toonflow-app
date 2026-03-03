@@ -16,13 +16,7 @@ export interface BackupOptions {
  * 获取数据库文件路径
  */
 function getDbPath(): string {
-  if (typeof process.versions?.electron !== "undefined") {
-    const { app } = require("electron");
-    const userDataDir: string = app.getPath("userData");
-    return path.join(userDataDir, "db.sqlite");
-  } else {
-    return path.join(process.cwd(), "db.sqlite");
-  }
+  return path.join(process.cwd(), "db.sqlite");
 }
 
 /**

@@ -22,7 +22,7 @@ describe('Path Resolver', () => {
       expect(isElectronEnvironment()).toBe(false);
     });
 
-    it('应该在 Electron 环境中返回 true', () => {
+    it('即使存在 Electron 标识也返回 false（纯 Web 模式）', () => {
       const mockProcess = {
         ...process,
         versions: {
@@ -32,7 +32,7 @@ describe('Path Resolver', () => {
       };
       vi.stubGlobal('process', mockProcess);
 
-      expect(isElectronEnvironment()).toBe(true);
+      expect(isElectronEnvironment()).toBe(false);
 
       vi.unstubAllGlobals();
     });

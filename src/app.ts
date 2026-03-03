@@ -67,14 +67,7 @@ export default async function startServe(randomPort: Boolean = false) {
   });
   app.use(globalLimiter);
 
-  let rootDir: string;
-  if (typeof process.versions?.electron !== "undefined") {
-    const { app } = require("electron");
-    const userDataDir: string = app.getPath("userData");
-    rootDir = path.join(userDataDir, "uploads");
-  } else {
-    rootDir = path.join(process.cwd(), "uploads");
-  }
+  const rootDir = path.join(process.cwd(), "uploads");
 
   // 确保 uploads 目录存在
   if (!fs.existsSync(rootDir)) {
@@ -159,5 +152,4 @@ export function closeServe(): Promise<void> {
   });
 }
 
-const isElectron = typeof process.versions?.electron !== "undefined";
-if (!isElectron) startServe();
+startServe();

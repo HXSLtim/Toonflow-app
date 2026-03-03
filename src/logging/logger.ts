@@ -19,11 +19,6 @@ interface LogEntry {
 }
 
 function getLogDir(): string {
-  const isElectron = typeof process.versions?.electron !== "undefined";
-  if (isElectron) {
-    const { app } = require("electron");
-    return path.join(app.getPath("userData"), "logs");
-  }
   return path.join(process.cwd(), "logs");
 }
 

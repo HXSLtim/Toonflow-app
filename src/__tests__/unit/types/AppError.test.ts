@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { AppError } from '@/types/AppError';
-import { ErrorCode } from '@/types/monitoring.d';
+import { ErrorCode } from '@/types/monitoring';
 
 describe('AppError', () => {
   describe('构造函数', () => {

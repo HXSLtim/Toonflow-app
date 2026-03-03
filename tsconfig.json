@@ -17,5 +17,7 @@
     "incremental": true,
     "typeRoots": ["./node_modules/@types", "./types"],
     "resolveJsonModule": true
-  }
+  },
+  "include": ["src/**/*.ts", "scripts/**/*.ts", "vitest.config.ts"],
+  "exclude": ["node_modules", "build", "app", "docs"]
 }

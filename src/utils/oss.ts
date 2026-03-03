@@ -27,13 +27,7 @@ class OSS {
   private initPromise: Promise<void>;
 
   constructor() {
-    if (typeof process.versions?.electron !== "undefined") {
-      const { app } = require("electron");
-      const userDataDir: string = app.getPath("userData");
-      this.rootDir = path.join(userDataDir, "uploads");
-    } else {
-      this.rootDir = path.join(process.cwd(), "uploads");
-    }
+    this.rootDir = path.join(process.cwd(), "uploads");
     // 初始化时自动创建根目录
     this.initPromise = fs.mkdir(this.rootDir, { recursive: true }).then(() => {});
   }

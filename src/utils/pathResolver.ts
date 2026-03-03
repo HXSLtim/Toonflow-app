@@ -1,22 +1,17 @@
 import path from "path";
 
 /**
- * 判断是否在 Electron 环境中运行
+ * 纯 Web 服务模式固定返回 false，保留函数用于兼容旧调用
  */
 export function isElectronEnvironment(): boolean {
-  return typeof process.versions?.electron !== "undefined";
+  return false;
 }
 
 /**
  * 获取用户数据目录路径
- * - Electron 环境：返回 userData 目录
- * - 非 Electron 环境：返回当前工作目录
+ * 纯 Web 服务模式：返回当前工作目录
  */
 export function getUserDataDir(): string {
-  if (isElectronEnvironment()) {
-    const { app } = require("electron");
-    return app.getPath("userData");
-  }
   return process.cwd();
 }
 
