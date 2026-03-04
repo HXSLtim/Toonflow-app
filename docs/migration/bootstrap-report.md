@@ -1,7 +1,7 @@
 # Migration Bootstrap Report
 
 ## Metadata
-- Timestamp (UTC): 2026-03-04T12:38:26Z
+- Timestamp (UTC): 2026-03-04T12:46:33Z
 - Workspace: `.worktrees/migration-target`
 - Branch: `migration/full-stack-separation`
 - Node.js: `v24.13.0`
@@ -21,7 +21,7 @@ Command:
 ```bash
 npm install --prefix .worktrees/migration-target
 ```
-Result: ✅ Success (`up to date, audited 1 package in 1s`, `found 0 vulnerabilities`)
+Result: ✅ Success (`up to date, audited 1 package in 344ms`, `found 0 vulnerabilities`)
 
 ### 3) Install API dependencies (strict resolver)
 Command:
@@ -41,7 +41,7 @@ Command:
 npm install --prefix .worktrees/migration-target/api --legacy-peer-deps
 ```
 Result: ⚠️ Completed with compatibility fallback
-- Installed: `481 packages`
+- Install output: `up to date, audited 482 packages in 3s`
 - Audit summary: `9 vulnerabilities (2 low, 7 high)`
 
 ### 5) Install web dependencies
@@ -50,8 +50,17 @@ Command:
 npm install --prefix .worktrees/migration-target/web
 ```
 Result: ✅ Success
-- Installed: `565 packages`
+- Install output: `up to date, audited 566 packages in 2s`
 - Audit summary: `found 0 vulnerabilities`
+
+### 6) Run lint (workspace)
+Command:
+```bash
+npm --prefix .worktrees/migration-target run lint
+```
+Result: ✅ Success
+- `lint:api`: `tsc --noEmit` passed
+- `lint:web`: `eslint .` passed
 
 ## Post-bootstrap Git Status
 Command:
@@ -60,7 +69,7 @@ git -C .worktrees/migration-target status --short --branch
 ```
 Observed:
 ```text
-## migration/full-stack-separation...origin/migration/full-stack-separation
+## migration/full-stack-separation...origin/migration/full-stack-separation [ahead 3]
  M api/yarn.lock
  M web/yarn.lock
 ?? api/package-lock.json
