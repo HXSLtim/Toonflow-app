@@ -13,13 +13,47 @@ interface CheckResult {
   message?: string;
 }
 
+type DbProbeClient = {
+  raw?: (query: string) => Promise<unknown>;
+  select?: (columns: number) => { first?: () => Promise<unknown> };
+} & ((table: string) => { first?: () => Promise<unknown> });
+
+async function runDbProbe(dbClient: unknown): Promise<void> {
+  const client = dbClient as DbProbeClient;
+
+  if (typeof client === "function") {
+    const tableProbe = client("sqlite_master");
+    if (tableProbe && typeof tableProbe.first === "function") {
+      await tableProbe.first();
+      return;
+    }
+  }
+
+  if (typeof client?.raw === "function") {
+    await client.raw.call(dbClient, "SELECT 1");
+    return;
+  }
+
+  const selectProbe = client?.select?.(1);
+  if (selectProbe && typeof selectProbe.first === "function") {
+    await selectProbe.first();
+    return;
+  }
+
+  throw new Error("数据库客户端不支持健康探针查询");
+}
+
 async function checkDatabase(): Promise<CheckResult> {
   try {
     const start = Date.now();
-    const db = (await import("@/utils")).default.db;
+    const wrappedDb = (await import("@/utils")).default.db;
 
-    // 简单的数据库查询测试
-    await db.raw("SELECT 1");
+    try {
+      await runDbProbe(wrappedDb);
+    } catch (probeError) {
+      const dbModule = await import("@/utils/db");
+      await runDbProbe(dbModule.db ?? dbModule.default);
+    }
 
     const latency = Date.now() - start;
 
