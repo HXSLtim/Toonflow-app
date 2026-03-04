@@ -7,6 +7,7 @@
 - `docs/migration/automated-validation-report.md`
 - `docs/migration/functional-smoke-report.md`
 - `docs/migration/week1-baseline-blockers-snapshot.md`
+- `docs/migration/week1-blockers-baseline.md`
 
 ## Gate Summary
 
@@ -26,6 +27,10 @@
 ## Week1 Baseline Blockers Snapshot
 - Formal baseline snapshot: `docs/migration/week1-baseline-blockers-snapshot.md`
 - Purpose: lock immediate blockers before fixes, and track closure against a stable pre-fix reference.
+
+## Week1 Recovery Plan
+- Recovery baseline: `docs/migration/week1-blockers-baseline.md`
+- Execution rule: close each blocker by meeting its `acceptance-target` with refreshed smoke evidence.
 
 ## Readiness Decision
 **Migration readiness: NOT READY**
