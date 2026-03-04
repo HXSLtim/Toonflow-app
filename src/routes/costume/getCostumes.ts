@@ -5,6 +5,7 @@ import { success, error } from "@/lib/responseFormat";
 import { validateFields } from "@/middleware/middleware";
 
 const router = express.Router();
+type CostumeQueryType = "costume" | "makeup" | "prop" | "all";
 
 // 获取角色服化道列表
 export default router.get(
@@ -14,21 +15,34 @@ export default router.get(
     characterId: z.number().optional(),
     type: z.enum(["costume", "makeup", "prop", "all"]).default("all"),
     episode: z.number().optional(),
-  }),
+  }, "query"),
   async (req, res) => {
-    const { projectId, characterId, type, episode } = req.query;
+    const projectId = Number(req.query.projectId);
+    const characterId = req.query.characterId ? Number(req.query.characterId) : undefined;
+    const type = req.query.type;
+    const episode = req.query.episode ? Number(req.query.episode) : undefined;
+
+    if (!Number.isFinite(projectId)) {
+      return res.status(400).send(error("projectId 参数无效"));
+    }
+
+    const isCostumeQueryType = (value: unknown): value is CostumeQueryType => {
+      return typeof value === "string" && ["costume", "makeup", "prop", "all"].includes(value);
+    };
+
+    const queryType: CostumeQueryType = isCostumeQueryType(type) ? type : "all";
 
     try {
-      let query = u.db("t_assets").where({ projectId });
+      let query = u.db("t_assets").where("projectId", projectId);
 
       // 筛选类型
-      if (type !== "all") {
+      if (queryType !== "all") {
         const typeMap = {
           costume: "服装",
           makeup: "化妆",
           prop: "道具",
         };
-        query = query.where("type", typeMap[type as keyof typeof typeMap]);
+        query = query.where("type", typeMap[queryType]);
       } else {
         query = query.whereIn("type", ["服装", "化妆", "道具"]);
       }

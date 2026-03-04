@@ -7,7 +7,9 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading, getCurrentUser } = useAuthStore();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const getCurrentUser = useAuthStore((state) => state.getCurrentUser);
 
   useEffect(() => {
     // 验证 token 有效性

@@ -16,7 +16,7 @@ const navigation = [
 export default function AppLayout({ children }: LayoutProps) {
   const location = useLocation()
   const navigate = useNavigate()
-  const { logout } = useAuthStore()
+  const logout = useAuthStore((state) => state.logout)
 
   const handleLogout = () => {
     logout()

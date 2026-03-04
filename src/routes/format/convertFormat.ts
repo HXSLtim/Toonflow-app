@@ -22,6 +22,10 @@ export default router.post(
         return res.status(404).send(error("文本不存在"));
       }
 
+      if (typeof novel.chapterData !== "string" || novel.chapterData.length === 0) {
+        return res.status(400).send(error("文本内容为空，无法转换格式"));
+      }
+
       const sourceData = JSON.parse(novel.chapterData);
       const apiConfig = await u.getPromptAi("textParse");
 
@@ -34,7 +38,9 @@ export default router.post(
 
       const systemPrompt = `你是一个专业的文本格式转换专家。请将给定的结构化内容转换为指定格式。`;
 
-      const userPrompt = `请将以下内容转换为${formatDescriptions[targetFormat]}：
+      const formatKey = targetFormat as keyof typeof formatDescriptions;
+
+      const userPrompt = `请将以下内容转换为${formatDescriptions[formatKey]}：
 
 源格式：${sourceData.format}
 源内容：
@@ -55,9 +61,9 @@ ${JSON.stringify(sourceData.content, null, 2)}
       // 保存转换结果
       const [newNovelId] = await u.db("t_novel").insert({
         projectId: novel.projectId,
-        chapter: `${novel.chapter} (转换为${targetFormat})`,
+        chapter: `${novel.chapter} (转换为${formatKey})`,
         chapterData: JSON.stringify({
-          format: targetFormat,
+          format: formatKey,
           originalId: novelId,
           content: convertedText,
         }),
@@ -67,7 +73,7 @@ ${JSON.stringify(sourceData.content, null, 2)}
       return res.status(200).send(
         success({
           novelId: newNovelId,
-          format: targetFormat,
+          format: formatKey,
           content: convertedText,
         })
       );

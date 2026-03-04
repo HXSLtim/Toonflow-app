@@ -1,26 +1,37 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuthStore, useProjectStore } from '@/stores'
 import { Plus, FolderOpen } from 'lucide-react'
 
 export default function Dashboard() {
   const navigate = useNavigate()
-  const { user, logout } = useAuthStore()
-  const { projects, fetchProjects } = useProjectStore()
+  const user = useAuthStore((state) => state.user)
+  const logout = useAuthStore((state) => state.logout)
+  const projects = useProjectStore((state) => state.projects)
+  const fetchProjects = useProjectStore((state) => state.fetchProjects)
 
   useEffect(() => {
     fetchProjects()
   }, [fetchProjects])
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     logout()
     navigate('/login', { replace: true })
-  }
+  }, [logout, navigate])
 
-  const totalProjects = projects.length
-  const activeProjects = projects.filter(p => p.status === 'active' || !p.status).length
-  const completedProjects = projects.filter(p => p.status === 'completed').length
-  const recentProjects = projects.slice(0, 5)
+  const { totalProjects, typedProjects, withIntroProjects, recentProjects } = useMemo(() => {
+    const total = projects.length
+    const typed = projects.filter((project) => Boolean(project.type)).length
+    const withIntro = projects.filter((project) => Boolean(project.intro)).length
+    const recent = projects.slice(0, 5)
+
+    return {
+      totalProjects: total,
+      typedProjects: typed,
+      withIntroProjects: withIntro,
+      recentProjects: recent,
+    }
+  }, [projects])
 
   return (
     <div className="space-y-6">
@@ -45,12 +56,12 @@ export default function Dashboard() {
           <p className="mt-2 text-3xl font-bold">{totalProjects}</p>
         </div>
         <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <h3 className="font-semibold">Active Projects</h3>
-          <p className="mt-2 text-3xl font-bold">{activeProjects}</p>
+          <h3 className="font-semibold">Typed Projects</h3>
+          <p className="mt-2 text-3xl font-bold">{typedProjects}</p>
         </div>
         <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <h3 className="font-semibold">Completed</h3>
-          <p className="mt-2 text-3xl font-bold">{completedProjects}</p>
+          <h3 className="font-semibold">With Description</h3>
+          <p className="mt-2 text-3xl font-bold">{withIntroProjects}</p>
         </div>
       </div>
 
@@ -90,9 +101,9 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="font-medium">{project.name}</h3>
-                    {project.description && (
+                    {project.intro && (
                       <p className="mt-1 text-sm text-muted-foreground line-clamp-1">
-                        {project.description}
+                        {project.intro}
                       </p>
                     )}
                   </div>

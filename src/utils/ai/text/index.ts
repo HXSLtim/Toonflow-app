@@ -45,29 +45,29 @@ const buildOptions = async <T extends Record<string, z.ZodTypeAny> | undefined>(
   const modelInstance = owned.instance({ apiKey, baseURL: baseURL!, name: "xixixi" });
 
   const maxStep = input.maxStep ?? (input.tools ? Object.keys(input.tools).length * 5 : undefined);
-  const outputBuilders: Record<string, (schema: T) => unknown> = {
-    schema: (s) => {
-      return Output.object({ schema: z.object(s as Record<string, z.ZodTypeAny>) });
-    },
-    object: () => {
-      const jsonSchemaPrompt = `\n请按照以下 JSON Schema 格式返回结果:\n${JSON.stringify(
-        z.toJSONSchema(z.object(input.output as Record<string, z.ZodTypeAny>)),
-        null,
-        2,
-      )}\n只返回结果，不要将Schema返回。`;
-      input.system = (input.system ?? "") + jsonSchemaPrompt;
-      // return Output.json();
-    },
-  };
+  let systemPrompt = input.system;
 
-  const output = input.output ? (outputBuilders[owned.responseFormat]?.(input.output) ?? null) : null;
-  const chatModelManufacturer = ["volcengine", "other", "openai", "modelScope","grsai"];
+  if (owned.responseFormat === "object" && input.output) {
+    const jsonSchemaPrompt = `\n请按照以下 JSON Schema 格式返回结果:\n${JSON.stringify(
+      z.toJSONSchema(z.object(input.output as Record<string, z.ZodTypeAny>)),
+      null,
+      2,
+    )}\n只返回结果，不要将Schema返回。`;
+    systemPrompt = (input.system ?? "") + jsonSchemaPrompt;
+  }
+
+  const output =
+    owned.responseFormat === "schema" && input.output
+      ? Output.object({ schema: z.object(input.output as Record<string, z.ZodTypeAny>) })
+      : undefined;
+
+  const chatModelManufacturer = ["volcengine", "other", "openai", "modelScope", "grsai"];
   const modelFn = chatModelManufacturer.includes(owned.manufacturer) ? (modelInstance as OpenAIProvider).chat(model!) : modelInstance(model!);
 
   return {
     config: {
       model: modelFn as LanguageModel,
-      ...(input.system && { system: input.system }),
+      ...(systemPrompt && { system: systemPrompt }),
       ...(input.prompt ? { prompt: input.prompt } : { messages: input.messages! }),
       ...(input.tools && owned.tool && { tools: input.tools }),
       ...(maxStep && { stopWhen: stepCountIs(maxStep) }),
@@ -122,7 +122,8 @@ async function retryWithBackoff<T>(
 }
 
 // 超时包装器
-function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+function withTimeout<T>(promiseOrValue: Promise<T> | T, timeoutMs: number): Promise<T> {
+  const promise = Promise.resolve(promiseOrValue);
   return Promise.race([
     promise,
     new Promise<T>((_, reject) =>
@@ -151,11 +152,12 @@ ai.invoke = async (input: AIInput<any>, config: AIConfig) => {
     const currentConfig = { ...config, model: currentModel };
 
     try {
+      const options = await buildOptions(input, currentConfig);
+
       // 带重试和超时的调用
       const result = await retryWithBackoff(
         async () => {
-          const options = await buildOptions(input, currentConfig);
-          return await withTimeout(generateText(options.config), timeout);
+          return await withTimeout(generateText(options.config as Parameters<typeof generateText>[0]), timeout);
         },
         retries,
         (attempt, error) => {
@@ -165,8 +167,6 @@ ai.invoke = async (input: AIInput<any>, config: AIConfig) => {
 
       // 处理响应格式
       if (result) {
-        const options = await buildOptions(input, currentConfig);
-
         if (options.responseFormat === "object" && input.output) {
           const pattern = /{[^{}]*}|{(?:[^{}]*|{[^{}]*})*}/g;
           const jsonLikeTexts = Array.from(result.text.matchAll(pattern), (m) => m[0]);
@@ -202,7 +202,7 @@ ai.stream = async (input: AIInput, config: AIConfig) => {
   const options = await buildOptions(input, config);
 
   // 流式调用暂不支持降级，但支持超时
-  return await withTimeout(streamText(options.config), timeout);
+  return await withTimeout(streamText(options.config as Parameters<typeof streamText>[0]), timeout);
 };
 
 export default ai;

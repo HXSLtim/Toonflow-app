@@ -41,8 +41,10 @@ export class LRUCache<K, V> {
 
     // 如果超过最大容量，删除最旧的项
     if (this.cache.size >= this.maxSize) {
-      const firstKey = this.cache.keys().next().value;
-      this.cache.delete(firstKey);
+      const firstEntry = this.cache.keys().next();
+      if (!firstEntry.done) {
+        this.cache.delete(firstEntry.value);
+      }
     }
 
     const expiry = Date.now() + (ttl || this.defaultTTL);

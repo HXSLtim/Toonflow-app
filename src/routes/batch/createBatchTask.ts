@@ -14,7 +14,7 @@ export default router.post(
     taskType: z.enum(["script", "storyboard", "image", "video"]),
     items: z.array(z.number()).min(1), // 章节ID或其他资源ID数组
     priority: z.number().min(1).max(10).default(5),
-    config: z.record(z.any()).optional(),
+    config: z.record(z.string(), z.any()).optional(),
   }),
   async (req, res) => {
     const { projectId, taskType, items, priority, config } = req.body;

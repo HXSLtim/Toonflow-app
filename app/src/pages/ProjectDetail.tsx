@@ -6,13 +6,19 @@ import { ArrowLeft, FileText, Image, Video, Settings } from 'lucide-react'
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { currentProject, isLoading, error, fetchProject, clearError } = useProjectStore()
+  const currentProject = useProjectStore((state) => state.currentProject)
+  const isLoading = useProjectStore((state) => state.isLoading)
+  const error = useProjectStore((state) => state.error)
+  const fetchProject = useProjectStore((state) => state.fetchProject)
+  const clearError = useProjectStore((state) => state.clearError)
+
+  const projectId = id ? Number(id) : NaN
 
   useEffect(() => {
-    if (id) {
-      fetchProject(Number(id))
+    if (Number.isFinite(projectId) && currentProject?.id !== projectId) {
+      fetchProject(projectId)
     }
-  }, [id, fetchProject])
+  }, [projectId, currentProject?.id, fetchProject])
 
   if (isLoading) {
     return (
@@ -74,8 +80,8 @@ export default function ProjectDetail() {
             Back to Projects
           </button>
           <h1 className="text-3xl font-bold tracking-tight">{currentProject.name}</h1>
-          {currentProject.description && (
-            <p className="text-muted-foreground">{currentProject.description}</p>
+          {currentProject.intro && (
+            <p className="text-muted-foreground">{currentProject.intro}</p>
           )}
         </div>
         <button className="rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground">
@@ -135,8 +141,8 @@ export default function ProjectDetail() {
         <h2 className="text-lg font-semibold">Project Information</h2>
         <dl className="mt-4 space-y-2 text-sm">
           <div className="flex justify-between">
-            <dt className="text-muted-foreground">Status:</dt>
-            <dd className="font-medium">{currentProject.status || 'Active'}</dd>
+            <dt className="text-muted-foreground">Type:</dt>
+            <dd className="font-medium">{currentProject.type || 'Default'}</dd>
           </div>
           {currentProject.createTime && (
             <div className="flex justify-between">

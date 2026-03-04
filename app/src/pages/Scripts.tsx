@@ -1,18 +1,19 @@
 import { useEffect } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { useProjectStore } from '@/stores'
 import { ArrowLeft, Plus, FileText } from 'lucide-react'
 
 export default function Scripts() {
   const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
-  const { currentProject, fetchProject } = useProjectStore()
+  const currentProject = useProjectStore((state) => state.currentProject)
+  const fetchProject = useProjectStore((state) => state.fetchProject)
+  const projectId = id ? Number(id) : NaN
 
   useEffect(() => {
-    if (id) {
-      fetchProject(Number(id))
+    if (Number.isFinite(projectId) && currentProject?.id !== projectId) {
+      fetchProject(projectId)
     }
-  }, [id, fetchProject])
+  }, [projectId, currentProject?.id, fetchProject])
 
   return (
     <div className="space-y-6">

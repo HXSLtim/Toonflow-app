@@ -473,7 +473,16 @@ const modelList: Owned[] = [
     tool: true,
   },
 ];
+
+let cachedModelList: Owned[] | null = null;
+let cachedModelListAt = 0;
+const MODEL_LIST_CACHE_TTL_MS = 30 * 1000;
+
 export const getModelList = async () => {
+  if (cachedModelList && Date.now() - cachedModelListAt < MODEL_LIST_CACHE_TTL_MS) {
+    return cachedModelList;
+  }
+
   const modelLists = await db("t_textModel").select("*");
   const resultInstaceList = modelLists.map((model) => {
     return {
@@ -484,6 +493,9 @@ export const getModelList = async () => {
       instance: instanceMap[model.manufacturer as keyof typeof instanceMap],
     };
   });
-  return resultInstaceList as Owned[];
+
+  cachedModelList = resultInstaceList as Owned[];
+  cachedModelListAt = Date.now();
+  return cachedModelList;
 };
 export default modelList;

@@ -3,6 +3,23 @@ import { persist } from 'zustand/middleware';
 import { authService } from '@/services';
 import type { t_user } from '@/types/database';
 
+const getErrorMessage = (error: unknown, fallback: string): string => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof (error as { message?: unknown }).message === 'string'
+  ) {
+    return (error as { message: string }).message;
+  }
+
+  return fallback;
+};
+
 interface AuthState {
   user: t_user | null;
   token: string | null;
@@ -41,9 +58,9 @@ export const useAuthStore = create<AuthState & AuthActions>()(
             isLoading: false,
             error: null,
           });
-        } catch (error: any) {
+        } catch (error: unknown) {
           set({
-            error: error.message || 'Login failed',
+            error: getErrorMessage(error, 'Login failed'),
             isLoading: false,
             isAuthenticated: false,
           });
@@ -62,9 +79,9 @@ export const useAuthStore = create<AuthState & AuthActions>()(
             isLoading: false,
             error: null,
           });
-        } catch (error: any) {
+        } catch (error: unknown) {
           set({
-            error: error.message || 'Registration failed',
+            error: getErrorMessage(error, 'Registration failed'),
             isLoading: false,
             isAuthenticated: false,
           });
@@ -96,9 +113,9 @@ export const useAuthStore = create<AuthState & AuthActions>()(
             isAuthenticated: true,
             isLoading: false,
           });
-        } catch (error: any) {
+        } catch (error: unknown) {
           set({
-            error: error.message || 'Failed to get user',
+            error: getErrorMessage(error, 'Failed to get user'),
             isLoading: false,
             isAuthenticated: false,
             user: null,

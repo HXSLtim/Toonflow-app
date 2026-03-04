@@ -39,19 +39,56 @@ export default async function startServe(randomPort: Boolean = false) {
   }
 
   // 修复 1: CORS 配置 - 只允许白名单域名
-  const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'];
-  app.use(cors({
-    origin: (origin, callback) => {
-      // 允许无 origin 的请求（如 Postman、curl）
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    credentials: true,
-    maxAge: 86400
-  }));
+  const defaultAllowedOrigins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+  ];
+
+  const configuredAllowedOrigins = (process.env.ALLOWED_ORIGINS || "")
+    .split(",")
+    .map(origin => origin.trim())
+    .filter(Boolean);
+
+  const allowedOrigins = Array.from(
+    new Set(
+      process.env.NODE_ENV === "prod"
+        ? configuredAllowedOrigins.length > 0
+          ? configuredAllowedOrigins
+          : defaultAllowedOrigins
+        : [...defaultAllowedOrigins, ...configuredAllowedOrigins]
+    )
+  );
+
+  app.use(
+    cors({
+      origin: (
+        origin: string | undefined,
+        callback: (err: Error | null, allow?: boolean) => void
+      ) => {
+        // 允许无 origin 的请求（如 Postman、curl）
+        if (!origin) {
+          return callback(null, true);
+        }
+
+        if (allowedOrigins.includes(origin)) {
+          return callback(null, true);
+        }
+
+        logger.warn("CORS origin not allowed", {
+          origin,
+          allowedOrigins,
+        });
+
+        // 返回 false 而不是抛错，避免将 CORS 拒绝升级为 500
+        return callback(null, false);
+      },
+      credentials: true,
+      maxAge: 86400,
+      optionsSuccessStatus: 204,
+    })
+  );
 
   // 修复 2: 请求大小限制调整为 10MB
   app.use(express.json({ limit: "10mb" }));

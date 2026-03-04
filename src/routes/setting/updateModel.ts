@@ -3,6 +3,8 @@ import u from "@/utils";
 import { z } from "zod";
 import { success } from "@/lib/responseFormat";
 import { validateFields } from "@/middleware/middleware";
+import { invalidateConfigCache } from "@/utils/getConfig";
+import { invalidatePromptAiCache } from "@/utils/getPromptAi";
 const router = express.Router();
 
 export default router.post(
@@ -27,6 +29,8 @@ export default router.post(
       manufacturer,
       modelType,
     });
+    invalidateConfigCache();
+    invalidatePromptAiCache();
     res.status(200).send(success("编辑成功"));
   },
 );

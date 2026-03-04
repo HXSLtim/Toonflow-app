@@ -127,6 +127,7 @@ ${JSON.stringify(
           {
             systemPrompt: "你是一个专业的服装设计师，请生成符合描述的服装设计图。",
             prompt: design.costume.newDesign.imagePrompt,
+            imageBase64: [],
             size: "2K",
             aspectRatio: "1:1",
           },

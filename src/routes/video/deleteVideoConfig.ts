@@ -3,8 +3,7 @@ import u from "@/utils";
 import { success, error } from "@/lib/responseFormat";
 import { validateFields } from "@/middleware/middleware";
 import { z } from "zod";
-import fs from "fs";
-import path from "path";
+import { fileProcessingLimit } from "@/utils/concurrency";
 const router = express.Router();
 
 // 删除视频配置
@@ -38,19 +37,25 @@ export default router.post(
       // }
     }
 
-    // 删除文件
-    const rootDir = path.join(process.cwd(), "uploads");
-    for (const filePath of filesToDelete) {
-      try {
-        const absolutePath = path.join(rootDir, filePath);
-        if (fs.existsSync(absolutePath)) {
-          fs.unlinkSync(absolutePath);
-          console.log("[删除视频配置] 删除文件:", absolutePath);
+    const deleteResults = await Promise.allSettled(
+      filesToDelete.map(async (filePath) => {
+        await fileProcessingLimit(async () => {
+          await u.oss.deleteFile(filePath);
+          console.log("[删除视频配置] 删除文件:", filePath);
+        });
+      })
+    );
+
+    const deletedFilesCount = deleteResults.filter((result) => result.status === "fulfilled").length;
+
+    deleteResults.forEach((result, index) => {
+      if (result.status === "rejected") {
+        const reason = result.reason as NodeJS.ErrnoException;
+        if (reason?.code !== "ENOENT") {
+          console.error("[删除视频配置] 删除文件失败:", filesToDelete[index], result.reason);
         }
-      } catch (err) {
-        console.error("[删除视频配置] 删除文件失败:", filePath, err);
       }
-    }
+    });
 
     // 删除数据库中的视频结果记录
     await u.db("t_video").where("configId", id).delete();
@@ -64,7 +69,7 @@ export default router.post(
         data: {
           deletedConfigId: id,
           deletedResultsCount: videoResults.length,
-          deletedFilesCount: filesToDelete.length,
+          deletedFilesCount,
         },
       }),
     );

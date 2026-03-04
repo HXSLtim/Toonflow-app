@@ -15,8 +15,12 @@ RUN yarn install --frozen-lockfile
 COPY tsconfig.json ./
 COPY src/ ./src/
 COPY scripts/ ./scripts/
+COPY app/ ./app/
 
 RUN yarn build
+
+# 构建前端静态资源
+RUN cd app && yarn install --frozen-lockfile && yarn build
 
 # 生产阶段
 FROM node:24-alpine
@@ -36,7 +40,7 @@ COPY --from=builder /app/package.json ./
 COPY --from=builder /app/yarn.lock ./
 
 # 复制静态页面到 nginx 目录
-COPY --from=builder /app/scripts/web /usr/share/nginx/html
+COPY --from=builder /app/app/dist /usr/share/nginx/html
 
 # 只安装生产依赖
 RUN yarn install --frozen-lockfile --production

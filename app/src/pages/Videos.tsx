@@ -5,13 +5,15 @@ import { ArrowLeft, Plus, Video as VideoIcon } from 'lucide-react'
 
 export default function Videos() {
   const { id } = useParams<{ id: string }>()
-  const { currentProject, fetchProject } = useProjectStore()
+  const currentProject = useProjectStore((state) => state.currentProject)
+  const fetchProject = useProjectStore((state) => state.fetchProject)
+  const projectId = id ? Number(id) : NaN
 
   useEffect(() => {
-    if (id) {
-      fetchProject(Number(id))
+    if (Number.isFinite(projectId) && currentProject?.id !== projectId) {
+      fetchProject(projectId)
     }
-  }, [id, fetchProject])
+  }, [projectId, currentProject?.id, fetchProject])
 
   return (
     <div className="space-y-6">

@@ -1,6 +1,26 @@
-import axios, { AxiosError, type AxiosInstance, type InternalAxiosRequestConfig, type AxiosResponse } from 'axios';
+import axios, {
+  AxiosError,
+  type AxiosInstance,
+  type AxiosRequestConfig,
+  type AxiosResponse,
+  type InternalAxiosRequestConfig,
+} from 'axios';
 
 const TOKEN_KEY = 'toonflow_token';
+
+const resolveApiBaseUrl = (): string => {
+  const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
+  if (configuredBaseUrl) {
+    return configuredBaseUrl.replace(/\/$/, '');
+  }
+
+  if (typeof window !== 'undefined' && window.location.port === '5173') {
+    const host = window.location.hostname || 'localhost';
+    return `http://${host}:60000`;
+  }
+
+  return 'http://localhost:60000';
+};
 
 export class HttpClient {
   private instance: AxiosInstance;
@@ -9,7 +29,7 @@ export class HttpClient {
 
   constructor() {
     this.instance = axios.create({
-      baseURL: 'http://localhost:60000',
+      baseURL: resolveApiBaseUrl(),
       timeout: 30000,
       headers: {
         'Content-Type': 'application/json',
@@ -74,10 +94,19 @@ export class HttpClient {
 
   private normalizeError(error: AxiosError): ApiError {
     if (error.response) {
+      const responseData = error.response.data;
+      const message =
+        typeof responseData === 'object' &&
+        responseData !== null &&
+        'message' in responseData &&
+        typeof (responseData as { message?: unknown }).message === 'string'
+          ? (responseData as { message: string }).message
+          : error.message;
+
       return {
-        message: (error.response.data as any)?.message || error.message,
+        message,
         status: error.response.status,
-        data: error.response.data,
+        data: responseData,
       };
     }
     return {
@@ -98,23 +127,35 @@ export class HttpClient {
     localStorage.removeItem(TOKEN_KEY);
   }
 
-  public get<T = any>(url: string, config?: any): Promise<AxiosResponse<T>> {
+  public get<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
     return this.instance.get<T>(url, config);
   }
 
-  public post<T = any>(url: string, data?: any, config?: any): Promise<AxiosResponse<T>> {
+  public post<T = unknown, D = unknown>(
+    url: string,
+    data?: D,
+    config?: AxiosRequestConfig<D>
+  ): Promise<AxiosResponse<T>> {
     return this.instance.post<T>(url, data, config);
   }
 
-  public put<T = any>(url: string, data?: any, config?: any): Promise<AxiosResponse<T>> {
+  public put<T = unknown, D = unknown>(
+    url: string,
+    data?: D,
+    config?: AxiosRequestConfig<D>
+  ): Promise<AxiosResponse<T>> {
     return this.instance.put<T>(url, data, config);
   }
 
-  public delete<T = any>(url: string, config?: any): Promise<AxiosResponse<T>> {
+  public delete<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
     return this.instance.delete<T>(url, config);
   }
 
-  public patch<T = any>(url: string, data?: any, config?: any): Promise<AxiosResponse<T>> {
+  public patch<T = unknown, D = unknown>(
+    url: string,
+    data?: D,
+    config?: AxiosRequestConfig<D>
+  ): Promise<AxiosResponse<T>> {
     return this.instance.patch<T>(url, data, config);
   }
 }
@@ -122,7 +163,7 @@ export class HttpClient {
 export interface ApiError {
   message: string;
   status: number;
-  data?: any;
+  data?: unknown;
 }
 
 export const http = new HttpClient();

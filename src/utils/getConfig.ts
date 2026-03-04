@@ -36,8 +36,23 @@ const errorMessages: Record<AIType, string> = {
 };
 
 const needBaseURL: AIType[] = ["text", "video", "image"];
+const CONFIG_CACHE_TTL_MS = 30 * 1000;
+const configCache = new Map<string, { value: BaseConfig | (BaseConfig & { baseURL: string }); expiresAt: number }>();
+const isTestEnv = process.env.NODE_ENV === "test";
+
+export function invalidateConfigCache(): void {
+  configCache.clear();
+}
 
 export default async function getConfig<T extends AIType>(aiType: T, manufacturer?: string): Promise<ResDataMap[T]> {
+  const cacheKey = `${aiType}:${manufacturer ?? "*"}`;
+  if (!isTestEnv) {
+    const cached = configCache.get(cacheKey);
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.value as ResDataMap[T];
+    }
+  }
+
   const config = await u
     .db("t_config")
     .where("type", aiType)
@@ -57,8 +72,22 @@ export default async function getConfig<T extends AIType>(aiType: T, manufacture
   };
 
   if (needBaseURL.includes(aiType)) {
-    return { ...result, baseURL: config.baseUrl } as ResDataMap[T];
+    const value = { ...result, baseURL: config.baseUrl } as ResDataMap[T];
+    if (!isTestEnv) {
+      configCache.set(cacheKey, {
+        value,
+        expiresAt: Date.now() + CONFIG_CACHE_TTL_MS,
+      });
+    }
+    return value;
   }
 
-  return result as ResDataMap[T];
+  const value = result as ResDataMap[T];
+  if (!isTestEnv) {
+    configCache.set(cacheKey, {
+      value,
+      expiresAt: Date.now() + CONFIG_CACHE_TTL_MS,
+    });
+  }
+  return value;
 }

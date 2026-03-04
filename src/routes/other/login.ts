@@ -39,6 +39,10 @@ export default router.post(
     const data = await u.db("t_user").where("name", "=", username).first();
     if (!data) return res.status(400).send(error("用户不存在"));
 
+    if (typeof data.password !== "string" || data.password.length === 0) {
+      return res.status(400).send(error("用户密码配置异常"));
+    }
+
     // 使用 bcrypt 验证密码
     const isPasswordValid = await bcrypt.compare(password, data.password);
     if (!isPasswordValid) {

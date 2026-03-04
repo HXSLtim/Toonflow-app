@@ -36,6 +36,11 @@ export default router.post(
           manufacturer,
         },
       );
+
+      if (typeof videoPath !== "string" || videoPath.length === 0) {
+        throw new Error("视频生成失败：未返回有效文件路径");
+      }
+
       const url = await u.oss.getFileUrl(videoPath);
       res.status(200).send(success(url));
     } catch (err: any) {

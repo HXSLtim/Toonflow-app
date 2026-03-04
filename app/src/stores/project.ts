@@ -2,9 +2,31 @@ import { create } from 'zustand';
 import { projectService } from '@/services';
 import type { Project } from '@/services/types';
 
+const PROJECT_CACHE_TTL_MS = 30_000;
+const inFlightProjectRequests = new Map<number, Promise<Project>>();
+let latestProjectFetchToken = 0;
+
+const getErrorMessage = (error: unknown, fallback: string): string => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof (error as { message?: unknown }).message === 'string'
+  ) {
+    return (error as { message: string }).message;
+  }
+
+  return fallback;
+};
+
 interface ProjectState {
   projects: Project[];
   currentProject: Project | null;
+  currentProjectFetchedAt: number | null;
   isLoading: boolean;
   error: string | null;
   pagination: {
@@ -28,6 +50,7 @@ export const useProjectStore = create<ProjectState & ProjectActions>((set) => ({
   // State
   projects: [],
   currentProject: null,
+  currentProjectFetchedAt: null,
   isLoading: false,
   error: null,
   pagination: {
@@ -50,25 +73,56 @@ export const useProjectStore = create<ProjectState & ProjectActions>((set) => ({
         },
         isLoading: false,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({
-        error: error.message || 'Failed to fetch projects',
+        error: getErrorMessage(error, 'Failed to fetch projects'),
         isLoading: false,
       });
     }
   },
 
   fetchProject: async (id: number) => {
+    const state = useProjectStore.getState();
+    if (
+      state.currentProject?.id === id &&
+      state.currentProjectFetchedAt !== null &&
+      Date.now() - state.currentProjectFetchedAt < PROJECT_CACHE_TTL_MS
+    ) {
+      return;
+    }
+
+    const fetchToken = ++latestProjectFetchToken;
     set({ isLoading: true, error: null });
+
     try {
-      const project = await projectService.getProject(id);
+      let request = inFlightProjectRequests.get(id);
+      if (!request) {
+        request = projectService.getProject(id);
+        inFlightProjectRequests.set(id, request);
+        void request.finally(() => {
+          if (inFlightProjectRequests.get(id) === request) {
+            inFlightProjectRequests.delete(id);
+          }
+        });
+      }
+
+      const project = await request;
+      if (fetchToken !== latestProjectFetchToken) {
+        return;
+      }
+
       set({
         currentProject: project,
+        currentProjectFetchedAt: Date.now(),
         isLoading: false,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (fetchToken !== latestProjectFetchToken) {
+        return;
+      }
+
       set({
-        error: error.message || 'Failed to fetch project',
+        error: getErrorMessage(error, 'Failed to fetch project'),
         isLoading: false,
       });
     }
@@ -83,9 +137,9 @@ export const useProjectStore = create<ProjectState & ProjectActions>((set) => ({
         isLoading: false,
       }));
       return project;
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({
-        error: error.message || 'Failed to create project',
+        error: getErrorMessage(error, 'Failed to create project'),
         isLoading: false,
       });
       throw error;
@@ -101,9 +155,9 @@ export const useProjectStore = create<ProjectState & ProjectActions>((set) => ({
         currentProject: state.currentProject?.id === id ? updated : state.currentProject,
         isLoading: false,
       }));
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({
-        error: error.message || 'Failed to update project',
+        error: getErrorMessage(error, 'Failed to update project'),
         isLoading: false,
       });
       throw error;
@@ -119,16 +173,20 @@ export const useProjectStore = create<ProjectState & ProjectActions>((set) => ({
         currentProject: state.currentProject?.id === id ? null : state.currentProject,
         isLoading: false,
       }));
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({
-        error: error.message || 'Failed to delete project',
+        error: getErrorMessage(error, 'Failed to delete project'),
         isLoading: false,
       });
       throw error;
     }
   },
 
-  setCurrentProject: (project) => set({ currentProject: project }),
+  setCurrentProject: (project) =>
+    set({
+      currentProject: project,
+      currentProjectFetchedAt: project ? Date.now() : null,
+    }),
 
   clearError: () => set({ error: null }),
 }));

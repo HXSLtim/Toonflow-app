@@ -132,7 +132,7 @@ describe('Response Format', () => {
         name: string;
       }
 
-      const userResponse: ApiResponse<User> = success({ id: 1, name: 'test' });
+      const userResponse: ApiResponse<User | null> = success({ id: 1, name: 'test' });
       expect(userResponse.data).toEqual({ id: 1, name: 'test' });
 
       const errorResponse: ApiResponse<null> = error('错误');

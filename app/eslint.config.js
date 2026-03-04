@@ -19,5 +19,30 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      'react-refresh/only-export-components': [
+        'error',
+        {
+          allowConstantExport: true,
+          allowExportNames: [
+            'useTheme',
+            'useFormField',
+            'Form',
+            'FormItem',
+            'FormLabel',
+            'FormControl',
+            'FormDescription',
+            'FormMessage',
+            'FormField',
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/components/ui/button.tsx', 'src/components/ui/form.tsx', 'src/components/theme-provider.tsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
   },
 ])

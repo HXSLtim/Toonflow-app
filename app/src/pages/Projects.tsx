@@ -1,17 +1,22 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useProjectStore } from '@/stores'
 import { Plus, Trash2, Edit } from 'lucide-react'
 
 export default function Projects() {
-  const { projects, isLoading, error, fetchProjects, deleteProject, clearError } = useProjectStore()
+  const projects = useProjectStore((state) => state.projects)
+  const isLoading = useProjectStore((state) => state.isLoading)
+  const error = useProjectStore((state) => state.error)
+  const fetchProjects = useProjectStore((state) => state.fetchProjects)
+  const deleteProject = useProjectStore((state) => state.deleteProject)
+  const clearError = useProjectStore((state) => state.clearError)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
 
   useEffect(() => {
     fetchProjects()
   }, [fetchProjects])
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = useCallback(async (id: number) => {
     if (confirm('Are you sure you want to delete this project?')) {
       try {
         await deleteProject(id)
@@ -19,7 +24,11 @@ export default function Projects() {
         console.error('Failed to delete project:', err)
       }
     }
-  }
+  }, [deleteProject])
+
+  const handleNewProject = useCallback(() => {
+    setShowCreateDialog(true)
+  }, [])
 
   if (isLoading) {
     return (
@@ -39,7 +48,7 @@ export default function Projects() {
           </p>
         </div>
         <button
-          onClick={() => setShowCreateDialog(true)}
+          onClick={handleNewProject}
           className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
         >
           <Plus className="h-4 w-4" />
@@ -53,6 +62,18 @@ export default function Projects() {
           <button
             onClick={clearError}
             className="mt-2 text-sm font-medium text-destructive hover:underline"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {showCreateDialog && (
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 text-sm text-muted-foreground">
+          Project creation dialog is not implemented yet.
+          <button
+            onClick={() => setShowCreateDialog(false)}
+            className="ml-3 font-medium text-primary hover:underline"
           >
             Dismiss
           </button>
@@ -74,13 +95,13 @@ export default function Projects() {
             >
               <Link to={`/projects/${project.id}`} className="block">
                 <h3 className="font-semibold">{project.name}</h3>
-                {project.description && (
+                {project.intro && (
                   <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
-                    {project.description}
+                    {project.intro}
                   </p>
                 )}
                 <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
-                  <span>Status: {project.status || 'Active'}</span>
+                  <span>Type: {project.type || 'Default'}</span>
                   {project.createTime && (
                     <span>
                       Created: {new Date(project.createTime).toLocaleDateString()}
@@ -101,7 +122,9 @@ export default function Projects() {
                 <button
                   onClick={(e) => {
                     e.preventDefault()
-                    handleDelete(project.id)
+                    if (project.id != null) {
+                      handleDelete(project.id)
+                    }
                   }}
                   className="rounded-md p-1 hover:bg-destructive/10 hover:text-destructive"
                 >

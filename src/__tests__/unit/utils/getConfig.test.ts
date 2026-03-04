@@ -75,13 +75,19 @@ describe('getConfig', () => {
       baseUrl: 'https://api.deepseek.com',
     };
 
-    const mockDb = {
+    let mockDb: {
+      where: ReturnType<typeof vi.fn>;
+      modify: ReturnType<typeof vi.fn>;
+      first: ReturnType<typeof vi.fn>;
+    };
+
+    mockDb = {
       where: vi.fn().mockReturnThis(),
-      modify: vi.fn(function (callback) {
+      modify: vi.fn((callback: (qb: { where: ReturnType<typeof vi.fn> }) => void) => {
         const qb = { where: vi.fn() };
         callback(qb);
         expect(qb.where).toHaveBeenCalledWith('manufacturer', 'deepseek');
-        return this;
+        return mockDb;
       }),
       first: vi.fn().mockResolvedValue(mockConfig),
     };

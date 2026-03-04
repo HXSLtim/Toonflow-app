@@ -2,6 +2,23 @@ import { create } from 'zustand';
 import { scriptService } from '@/services';
 import type { Script, Outline, Novel, Storyline } from '@/services/types';
 
+const getErrorMessage = (error: unknown, fallback: string): string => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof (error as { message?: unknown }).message === 'string'
+  ) {
+    return (error as { message: string }).message;
+  }
+
+  return fallback;
+};
+
 interface ScriptState {
   scripts: Script[];
   currentScript: Script | null;
@@ -58,8 +75,8 @@ export const useScriptStore = create<ScriptState & ScriptActions>((set) => ({
     try {
       const scripts = await scriptService.getScripts(projectId);
       set({ scripts, isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message || 'Failed to fetch scripts', isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error, 'Failed to fetch scripts'), isLoading: false });
     }
   },
 
@@ -68,8 +85,8 @@ export const useScriptStore = create<ScriptState & ScriptActions>((set) => ({
     try {
       const script = await scriptService.getScript(id);
       set({ currentScript: script, isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message || 'Failed to fetch script', isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error, 'Failed to fetch script'), isLoading: false });
     }
   },
 
@@ -82,8 +99,8 @@ export const useScriptStore = create<ScriptState & ScriptActions>((set) => ({
         isLoading: false,
       }));
       return script;
-    } catch (error: any) {
-      set({ error: error.message || 'Failed to create script', isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error, 'Failed to create script'), isLoading: false });
       throw error;
     }
   },
@@ -97,8 +114,8 @@ export const useScriptStore = create<ScriptState & ScriptActions>((set) => ({
         currentScript: state.currentScript?.id === id ? updated : state.currentScript,
         isLoading: false,
       }));
-    } catch (error: any) {
-      set({ error: error.message || 'Failed to update script', isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error, 'Failed to update script'), isLoading: false });
       throw error;
     }
   },
@@ -112,8 +129,8 @@ export const useScriptStore = create<ScriptState & ScriptActions>((set) => ({
         currentScript: state.currentScript?.id === id ? null : state.currentScript,
         isLoading: false,
       }));
-    } catch (error: any) {
-      set({ error: error.message || 'Failed to delete script', isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error, 'Failed to delete script'), isLoading: false });
       throw error;
     }
   },
@@ -126,8 +143,8 @@ export const useScriptStore = create<ScriptState & ScriptActions>((set) => ({
     try {
       const outlines = await scriptService.getOutlines(projectId);
       set({ outlines, isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message || 'Failed to fetch outlines', isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error, 'Failed to fetch outlines'), isLoading: false });
     }
   },
 
@@ -140,8 +157,8 @@ export const useScriptStore = create<ScriptState & ScriptActions>((set) => ({
         isLoading: false,
       }));
       return outline;
-    } catch (error: any) {
-      set({ error: error.message || 'Failed to create outline', isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error, 'Failed to create outline'), isLoading: false });
       throw error;
     }
   },
@@ -154,8 +171,8 @@ export const useScriptStore = create<ScriptState & ScriptActions>((set) => ({
         outlines: state.outlines.map((o) => (o.id === id ? updated : o)),
         isLoading: false,
       }));
-    } catch (error: any) {
-      set({ error: error.message || 'Failed to update outline', isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error, 'Failed to update outline'), isLoading: false });
       throw error;
     }
   },
@@ -168,8 +185,8 @@ export const useScriptStore = create<ScriptState & ScriptActions>((set) => ({
         outlines: state.outlines.filter((o) => o.id !== id),
         isLoading: false,
       }));
-    } catch (error: any) {
-      set({ error: error.message || 'Failed to delete outline', isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error, 'Failed to delete outline'), isLoading: false });
       throw error;
     }
   },
@@ -180,8 +197,8 @@ export const useScriptStore = create<ScriptState & ScriptActions>((set) => ({
     try {
       const novels = await scriptService.getNovels(projectId);
       set({ novels, isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message || 'Failed to fetch novels', isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error, 'Failed to fetch novels'), isLoading: false });
     }
   },
 
@@ -194,8 +211,8 @@ export const useScriptStore = create<ScriptState & ScriptActions>((set) => ({
         isLoading: false,
       }));
       return novel;
-    } catch (error: any) {
-      set({ error: error.message || 'Failed to create novel', isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error, 'Failed to create novel'), isLoading: false });
       throw error;
     }
   },
@@ -208,8 +225,8 @@ export const useScriptStore = create<ScriptState & ScriptActions>((set) => ({
         novels: state.novels.map((n) => (n.id === id ? updated : n)),
         isLoading: false,
       }));
-    } catch (error: any) {
-      set({ error: error.message || 'Failed to update novel', isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error, 'Failed to update novel'), isLoading: false });
       throw error;
     }
   },
@@ -222,8 +239,8 @@ export const useScriptStore = create<ScriptState & ScriptActions>((set) => ({
         novels: state.novels.filter((n) => n.id !== id),
         isLoading: false,
       }));
-    } catch (error: any) {
-      set({ error: error.message || 'Failed to delete novel', isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error, 'Failed to delete novel'), isLoading: false });
       throw error;
     }
   },
@@ -234,8 +251,8 @@ export const useScriptStore = create<ScriptState & ScriptActions>((set) => ({
     try {
       const storylines = await scriptService.getStorylines(projectId);
       set({ storylines, isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message || 'Failed to fetch storylines', isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error, 'Failed to fetch storylines'), isLoading: false });
     }
   },
 
@@ -248,8 +265,8 @@ export const useScriptStore = create<ScriptState & ScriptActions>((set) => ({
         isLoading: false,
       }));
       return storyline;
-    } catch (error: any) {
-      set({ error: error.message || 'Failed to create storyline', isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error, 'Failed to create storyline'), isLoading: false });
       throw error;
     }
   },
@@ -262,8 +279,8 @@ export const useScriptStore = create<ScriptState & ScriptActions>((set) => ({
         storylines: state.storylines.map((s) => (s.id === id ? updated : s)),
         isLoading: false,
       }));
-    } catch (error: any) {
-      set({ error: error.message || 'Failed to update storyline', isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error, 'Failed to update storyline'), isLoading: false });
       throw error;
     }
   },
@@ -276,8 +293,8 @@ export const useScriptStore = create<ScriptState & ScriptActions>((set) => ({
         storylines: state.storylines.filter((s) => s.id !== id),
         isLoading: false,
       }));
-    } catch (error: any) {
-      set({ error: error.message || 'Failed to delete storyline', isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error, 'Failed to delete storyline'), isLoading: false });
       throw error;
     }
   },

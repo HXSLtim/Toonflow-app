@@ -4,7 +4,11 @@ import { useAuthStore } from '@/stores';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login, isLoading, error, isAuthenticated, clearError } = useAuthStore();
+  const login = useAuthStore((state) => state.login);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const error = useAuthStore((state) => state.error);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const clearError = useAuthStore((state) => state.clearError);
 
   const [formData, setFormData] = useState({
     username: '',
