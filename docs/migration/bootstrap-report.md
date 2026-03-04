@@ -1,7 +1,7 @@
 # Migration Bootstrap Report
 
 ## Metadata
-- Timestamp (UTC): 2026-03-04T12:51:50Z
+- Timestamp (UTC): 2026-03-04T12:54:11Z
 - Workspace: `.worktrees/migration-target`
 - Branch: `migration/full-stack-separation`
 - Baseline commit before bootstrap: `26374e1`
@@ -79,12 +79,23 @@ git -C .worktrees/migration-target status --short --branch
 ```
 Observed:
 ```text
-## migration/full-stack-separation...origin/migration/full-stack-separation [ahead 6]
+## migration/full-stack-separation...origin/migration/full-stack-separation [ahead 8]
  M api/src/router.ts
  M api/src/types/database.d.ts
-?? docs/migration/smoke-api-health.json
-?? docs/migration/smoke-login.json
+ M docs/migration/smoke-api-health.json
+?? docs/migration/smoke-api-health.headers
+?? docs/migration/smoke-api-health.status
+?? docs/migration/smoke-login.headers
+?? docs/migration/smoke-login.status
+?? docs/migration/smoke-run-end-utc.txt
+?? docs/migration/smoke-run-processes.txt
+?? docs/migration/smoke-run-start-utc.txt
+?? docs/migration/smoke-web-dev.log
+?? docs/migration/smoke-web-home.headers
 ?? docs/migration/smoke-web-home.html
+?? docs/migration/smoke-web-home.status
+?? docs/migration/smoke-web-login.headers
+?? docs/migration/smoke-web-login.status
 ```
 
 ## Conclusion
