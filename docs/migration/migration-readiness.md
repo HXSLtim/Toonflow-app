@@ -6,6 +6,7 @@
 - `docs/migration/master-vs-migration-parity.md`
 - `docs/migration/automated-validation-report.md`
 - `docs/migration/functional-smoke-report.md`
+- `docs/migration/week1-baseline-blockers-snapshot.md`
 
 ## Gate Summary
 
@@ -21,6 +22,10 @@
 ## Critical Findings Blocking Readiness
 1. `GET /monitoring/health` returns `503` with payload indicating database probe issue: `db.raw is not a function`.
 2. Web service smoke checks (`/`, `/login` on `localhost:5173`) returned `404` in current run mode.
+
+## Week1 Baseline Blockers Snapshot
+- Formal baseline snapshot: `docs/migration/week1-baseline-blockers-snapshot.md`
+- Purpose: lock immediate blockers before fixes, and track closure against a stable pre-fix reference.
 
 ## Readiness Decision
 **Migration readiness: NOT READY**
