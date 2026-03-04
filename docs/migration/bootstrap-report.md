@@ -1,9 +1,10 @@
 # Migration Bootstrap Report
 
 ## Metadata
-- Timestamp (UTC): 2026-03-04T12:46:33Z
+- Timestamp (UTC): 2026-03-04T12:51:50Z
 - Workspace: `.worktrees/migration-target`
 - Branch: `migration/full-stack-separation`
+- Baseline commit before bootstrap: `26374e1`
 - Node.js: `v24.13.0`
 - npm: `11.6.2`
 
@@ -14,33 +15,33 @@ Command:
 ```bash
 git -C .worktrees/migration-target fetch origin && git -C .worktrees/migration-target pull --ff-only
 ```
-Result: ✅ Success (`Already up to date.`)
+Result: ✅ PASS (`Already up to date.`)
 
 ### 2) Install root dependencies
 Command:
 ```bash
 npm install --prefix .worktrees/migration-target
 ```
-Result: ✅ Success (`up to date, audited 1 package in 344ms`, `found 0 vulnerabilities`)
+Result: ✅ PASS (`up to date, audited 1 package in 344ms`, `found 0 vulnerabilities`)
 
 ### 3) Install API dependencies (strict resolver)
 Command:
 ```bash
 npm install --prefix .worktrees/migration-target/api
 ```
-Result: ❌ Failed (`ERESOLVE` peer resolution conflict)
+Result: ❌ FAIL (`ERESOLVE` peer resolution conflict)
 
-Failure summary:
-- Package: `@rmp135/sql-ts@2.2.0`
+Key error summary:
+- While resolving: `@rmp135/sql-ts@2.2.0`
 - Found: `better-sqlite3@12.6.2`
-- Expected peerOptional: `better-sqlite3@^11.2.1`
+- Required peerOptional: `better-sqlite3@^11.2.1`
 
-### 4) Install API dependencies (compat fallback)
+### 4) Install API dependencies (legacy fallback)
 Command:
 ```bash
 npm install --prefix .worktrees/migration-target/api --legacy-peer-deps
 ```
-Result: ⚠️ Completed with compatibility fallback
+Result: ⚠️ PASS with fallback
 - Install output: `up to date, audited 482 packages in 3s`
 - Audit summary: `9 vulnerabilities (2 low, 7 high)`
 
@@ -49,7 +50,7 @@ Command:
 ```bash
 npm install --prefix .worktrees/migration-target/web
 ```
-Result: ✅ Success
+Result: ✅ PASS
 - Install output: `up to date, audited 566 packages in 2s`
 - Audit summary: `found 0 vulnerabilities`
 
@@ -58,25 +59,33 @@ Command:
 ```bash
 npm --prefix .worktrees/migration-target run lint
 ```
-Result: ✅ Success
-- `lint:api`: `tsc --noEmit` passed
-- `lint:web`: `eslint .` passed
+Result: ✅ PASS
+- `lint:api` (`tsc --noEmit`) passed
+- `lint:web` (`eslint .`) passed
 
-## Post-bootstrap Git Status
+## Cleanup Performed
+To avoid package-manager noise in this task commit:
+- Restored lockfile changes:
+  - `git -C .worktrees/migration-target restore api/yarn.lock web/yarn.lock`
+- Removed generated npm lockfiles:
+  - `.worktrees/migration-target/package-lock.json`
+  - `.worktrees/migration-target/api/package-lock.json`
+  - `.worktrees/migration-target/web/package-lock.json`
+
+## Post-cleanup Status Snapshot
 Command:
 ```bash
 git -C .worktrees/migration-target status --short --branch
 ```
 Observed:
 ```text
-## migration/full-stack-separation...origin/migration/full-stack-separation [ahead 3]
- M api/yarn.lock
- M web/yarn.lock
-?? api/package-lock.json
-?? package-lock.json
-?? web/package-lock.json
+## migration/full-stack-separation...origin/migration/full-stack-separation [ahead 6]
+ M api/src/router.ts
+ M api/src/types/database.d.ts
+?? docs/migration/smoke-api-health.json
+?? docs/migration/smoke-login.json
+?? docs/migration/smoke-web-home.html
 ```
 
-## Notes
-- API dependency installation currently requires `--legacy-peer-deps` due to peer constraint mismatch between `@rmp135/sql-ts` and `better-sqlite3`.
-- `npm install` introduced npm lockfiles while existing Yarn lockfiles were also updated.
+## Conclusion
+Bootstrap dependency setup is completed for task #15 with a documented strict-install failure and successful legacy fallback for API, and lint gate passing.
