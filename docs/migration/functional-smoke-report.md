@@ -9,11 +9,15 @@
 ## API Smoke
 
 ### A1. Monitoring health endpoint
-- Command: `curl -sS -o docs/migration/smoke-api-health.json -w "%{http_code}" http://127.0.0.1:60000/monitoring/health`
-- HTTP Status: `503`
-- Result: ⚠️ Degraded/Unhealthy
-- Evidence: `docs/migration/smoke-api-health.json`
-- Key finding: `database.status=unhealthy`, message `db.raw is not a function`
+- Initial command: `curl -sS -o docs/migration/smoke-api-health.json -w "%{http_code}" http://127.0.0.1:60000/monitoring/health`
+- Initial HTTP Status: `503`
+- Initial result: ⚠️ Degraded/Unhealthy
+- Initial evidence: `docs/migration/smoke-api-health.json`
+- Initial key finding: `database.status=unhealthy`, message `db.raw is not a function`
+- Recheck command (after #21 fix): `curl -sS -D docs/migration/week1-health-probe-afterfix.headers -o docs/migration/week1-health-probe-afterfix.json -w "%{http_code}" http://127.0.0.1:60000/monitoring/health`
+- Recheck HTTP Status: `200`
+- Recheck result: ✅ Pass
+- Recheck evidence: `docs/migration/week1-health-probe-afterfix.json` / `docs/migration/week1-health-probe-afterfix.headers`
 
 ### A2. Login endpoint
 - Command: `curl -sS -H "Content-Type: application/json" -d '{"username":"admin","password":"admin123"}' -o docs/migration/smoke-login.json -w "%{http_code}" http://127.0.0.1:60000/other/login`
@@ -40,14 +44,14 @@
 
 | Scenario | Expected | Actual | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| API health check | 200 healthy/degraded | 503 unhealthy | ❌ FAIL | `docs/migration/smoke-api-health.json` |
+| API health check | 200 healthy/degraded | initial: 503 unhealthy; recheck: 200 healthy | ⚠️ RECOVERED | `docs/migration/smoke-api-health.json`; `docs/migration/week1-health-probe-afterfix.json` |
 | User login | 200 + token | 200 + token | ✅ PASS | `docs/migration/smoke-login.json` |
 | Web home availability | 200 HTML | 404 | ❌ FAIL | `docs/migration/smoke-web-home.raw` |
 | Web login availability | 200 HTML | 404 | ❌ FAIL | `docs/migration/smoke-web-login.html` |
 
 ## Smoke Conclusion
 - API core auth path is working (`/other/login` pass).
-- Monitoring health endpoint reports unhealthy database probe.
+- Monitoring health endpoint was recovered after #21 fix (`503 -> 200`).
 - Web routes are not reachable under current runtime invocation (404), needs follow-up on web service routing/start mode.
 
-Overall smoke status: **NOT PASS**.
+Overall smoke status: **NOT PASS** (blocked by web reachability).
