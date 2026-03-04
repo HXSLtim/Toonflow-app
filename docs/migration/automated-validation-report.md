@@ -3,8 +3,8 @@
 ## Metadata
 - Workspace: `.worktrees/migration-target`
 - Branch: `migration/full-stack-separation`
-- Baseline commit before validation: `3e6f87689ec76ccfb5daf50970ddf795f3b99837`
-- Validation timestamp (UTC): `2026-03-04T12:57:20Z`
+- Baseline commit before validation: `d7fddd7900a6618043b5721b7dec9845b0af5a7c`
+- Validation timestamp (UTC): `2026-03-04T12:58:35Z`
 
 ## Commands and Results
 
