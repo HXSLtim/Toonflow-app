@@ -3,8 +3,8 @@
 ## Metadata
 - Workspace: `.worktrees/migration-target`
 - Branch: `migration/full-stack-separation`
-- Baseline commit before validation: `df7b797bb8a21c5d398c6a2728c906eec2448fd8`
-- Validation timestamp (UTC): `2026-03-04T12:59:59Z`
+- Baseline commit before validation: `57f397bc0e977fdfc9da3033855aba272cd25fd2`
+- Validation timestamp (UTC): `2026-03-04T13:41:19Z`
 
 ## Commands and Results
 
@@ -26,7 +26,7 @@ npm --prefix .worktrees/migration-target run test
 Result: ✅ PASS (exit code `0`)
 Evidence:
 - `docs/migration/automated-validation-test.log`
-- Key output: `Test Files 15 passed (15)`, `Tests 147 passed (147)`
+- Key output: `Test Files 16 passed (16)`, `Tests 150 passed (150)`
 
 ### 3) Build
 Command:
@@ -36,7 +36,7 @@ npm --prefix .worktrees/migration-target run build
 Result: ✅ PASS (exit code `0`)
 Evidence:
 - `docs/migration/automated-validation-build.log`
-- Key output: API build completed (`build/app.js`), Web build completed (`✓ built in 4.68s`)
+- Key output: API build completed (`build/app.js`), Web build completed (`✓ built in 3.06s`)
 
 ## Summary
 - lint: PASS
