@@ -3,6 +3,11 @@
 ## Scope
 Pre-fix baseline for immediate blockers that keep migration readiness at `NOT READY` in Week1.
 
+## Snapshot Metadata
+- Captured at (UTC): `2026-03-04T13:20:40Z`
+- Baseline commit: `e76a3df`
+- Tracking purpose: formalize blockers before fixes and provide a stable acceptance target reference.
+
 ## Blockers Table
 
 | blocker-id | symptom | evidence-path | acceptance-target | owner |

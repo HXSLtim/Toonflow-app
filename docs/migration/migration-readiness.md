@@ -31,6 +31,10 @@
 ## Week1 Recovery Plan
 - Recovery baseline: `docs/migration/week1-blockers-baseline.md`
 - Execution rule: close each blocker by meeting its `acceptance-target` with refreshed smoke evidence.
+- Closure checkpoints:
+  1. Verify health probe blocker (`W1-BLK-001`) is resolved and evidence is updated.
+  2. Verify web route blocker (`W1-BLK-002`) is resolved and evidence is updated.
+  3. Re-run full readiness evaluation before lifting `NOT READY`.
 
 ## Readiness Decision
 **Migration readiness: NOT READY**
