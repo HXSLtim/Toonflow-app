@@ -9,6 +9,10 @@
 - `docs/migration/week1-baseline-blockers-snapshot.md`
 - `docs/migration/week1-blockers-baseline.md`
 - `docs/migration/week1-web-smoke-runbook.md`
+- `docs/migration/long-horizon-progress.md`
+
+## Long-Horizon Tracking
+- Weekly evidence tracker: `docs/migration/long-horizon-progress.md`
 
 ## Gate Summary
 
