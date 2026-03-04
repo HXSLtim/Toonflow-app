@@ -3,18 +3,19 @@
 - Baseline branch: `master`
 - Migration branch: `origin/migration/full-stack-separation`
 - Assessment scope: API routes, frontend pages, workspace scripts, package structure
-- Status values: `✅ Aligned` / `⚠️ Partial` / `❌ Missing`
+
+- 验证状态定义：`未验证` / `通过` / `回归`
 
 ## Parity Matrix
 
-| Baseline ID | Master Evidence | Migration Evidence | Status | Verification |
-| --- | --- | --- | --- | --- |
-| API-001 | `src/routes/**` (96 files) | `api/src/routes/**` (96 files) | ✅ Aligned | `git ls-tree -r --name-only HEAD src/routes` + `git ls-tree -r --name-only origin/migration/full-stack-separation api/src/routes` + `comm` (missing=0, extra=0) |
-| API-002 | 96 route modules with master blob hashes | 96 route modules with migration blob hashes | ⚠️ Partial | blob-hash compare via `git ls-tree -r` + `join`; changed files = 11 |
-| WEB-001 | `app/src/pages/**` (11 files) | `web/src/pages/**` (11 files) | ✅ Aligned | `git ls-tree -r --name-only HEAD app/src/pages` + `git ls-tree -r --name-only origin/migration/full-stack-separation web/src/pages` + `comm` (missing=0, extra=0) |
-| WEB-002 | 11 pages with master blob hashes | 11 pages with migration blob hashes | ⚠️ Partial | blob-hash compare via `git ls-tree -r` + `join`; changed files = 11/11 |
-| SCR-001 | root scripts (`dev`, `lint`, `test`, `build`) in `package.json` | workspace scripts (`dev:api`, `dev:web`, `lint*`, `test*`, `build*`) in root `package.json` | ✅ Aligned | `git show HEAD:package.json` vs `git show origin/migration/full-stack-separation:package.json` |
-| PKG-001 | monolith manifests: root + `app/package.json` | split manifests: root + `api/package.json` + `web/package.json` | ✅ Aligned | `git diff --name-status HEAD..origin/migration/full-stack-separation -- package.json app/package.json api/package.json web/package.json` |
+| Baseline ID | Master Evidence | Migration Evidence | Status | 验证状态 | Verification |
+| --- | --- | --- | --- | --- | --- |
+| API-001 | `src/routes/**` (96 files) | `api/src/routes/**` (96 files) | ✅ Aligned | 通过 | `git ls-tree -r --name-only HEAD src/routes` + `git ls-tree -r --name-only origin/migration/full-stack-separation api/src/routes` + `comm` (missing=0, extra=0) |
+| API-002 | 96 route modules with master blob hashes | 96 route modules with migration blob hashes | ⚠️ Partial | 未验证 | blob-hash compare via `git ls-tree -r` + `join`; changed files = 11 |
+| WEB-001 | `app/src/pages/**` (11 files) | `web/src/pages/**` (11 files) | ✅ Aligned | 通过 | `git ls-tree -r --name-only HEAD app/src/pages` + `git ls-tree -r --name-only origin/migration/full-stack-separation web/src/pages` + `comm` (missing=0, extra=0) |
+| WEB-002 | 11 pages with master blob hashes | 11 pages with migration blob hashes | ⚠️ Partial | 未验证 | blob-hash compare via `git ls-tree -r` + `join`; changed files = 11/11 |
+| SCR-001 | root scripts (`dev`, `lint`, `test`, `build`) in `package.json` | workspace scripts (`dev:api`, `dev:web`, `lint*`, `test*`, `build*`) in root `package.json` | ✅ Aligned | 通过 | `git show HEAD:package.json` vs `git show origin/migration/full-stack-separation:package.json` |
+| PKG-001 | monolith manifests: root + `app/package.json` | split manifests: root + `api/package.json` + `web/package.json` | ✅ Aligned | 通过 | `git diff --name-status HEAD..origin/migration/full-stack-separation -- package.json app/package.json api/package.json web/package.json` |
 
 ## Changed Modules Evidence (`⚠️ Partial`)
 
