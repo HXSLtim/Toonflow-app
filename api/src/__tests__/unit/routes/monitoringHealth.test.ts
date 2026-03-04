@@ -3,23 +3,27 @@ import express, { Express } from "express";
 import request from "supertest";
 import healthRoute from "@/routes/monitoring/health";
 
+const { wrappedDbMock, rawDbMock } = vi.hoisted(() => {
+  const wrappedDbMock = vi.fn(() => ({
+    first: vi.fn().mockResolvedValue({ id: 1 }),
+  }));
+
+  const rawDbMock = {
+    raw: vi.fn().mockResolvedValue([{ probe: 1 }]),
+  };
+
+  return { wrappedDbMock, rawDbMock };
+});
+
 vi.mock("@/utils", () => ({
   default: {
-    db: {
-      select: vi.fn(() => ({
-        first: vi.fn().mockResolvedValue({ probe: 1 }),
-      })),
-    },
+    db: wrappedDbMock,
   },
 }));
 
 vi.mock("@/utils/db", () => ({
-  default: vi.fn(() => ({
-    first: vi.fn().mockResolvedValue({ probe: 1 }),
-  })),
-  db: {
-    raw: vi.fn().mockResolvedValue([{ probe: 1 }]),
-  },
+  db: rawDbMock,
+  default: wrappedDbMock,
 }));
 
 describe("Monitoring Health Route", () => {
@@ -31,40 +35,30 @@ describe("Monitoring Health Route", () => {
     app.get("/monitoring/health", healthRoute);
   });
 
-  it("uses wrapped db probe when select-first is available", async () => {
-    const u = (await import("@/utils")).default;
-    const dbModule = await import("@/utils/db");
-
+  it("uses wrapped callable db probe first", async () => {
     const response = await request(app).get("/monitoring/health").expect(200);
 
-    expect(response.body.status).toBeDefined();
     expect(response.body.checks.database.status).toBe("healthy");
-    expect((u.db.select as any)).toHaveBeenCalledWith(1);
-    expect((dbModule.db.raw as any)).not.toHaveBeenCalled();
+    expect(wrappedDbMock).toHaveBeenCalledWith("t_user");
+    expect(rawDbMock.raw).not.toHaveBeenCalled();
   });
 
-  it("falls back to low-level db module when wrapped client probe fails", async () => {
-    const u = (await import("@/utils")).default;
-    const dbModule = await import("@/utils/db");
-
-    (u.db.select as any).mockImplementation(() => {
+  it("falls back to raw db probe when wrapped probe fails", async () => {
+    wrappedDbMock.mockImplementation(() => {
       throw new Error("wrapped probe unavailable");
     });
 
     const response = await request(app).get("/monitoring/health").expect(200);
 
     expect(response.body.checks.database.status).toBe("healthy");
-    expect((dbModule.db.raw as any)).toHaveBeenCalledWith("SELECT 1");
+    expect(rawDbMock.raw).toHaveBeenCalledWith("SELECT 1");
   });
 
-  it("returns 503 when all probe methods are unavailable", async () => {
-    const u = (await import("@/utils")).default;
-    const dbModule = await import("@/utils/db");
-
-    (u.db.select as any).mockImplementation(() => {
+  it("returns 503 when wrapped and raw probes both fail", async () => {
+    wrappedDbMock.mockImplementation(() => {
       throw new Error("wrapped probe unavailable");
     });
-    (dbModule.db.raw as any).mockImplementation(() => {
+    rawDbMock.raw.mockImplementation(() => {
       throw new Error("raw probe unavailable");
     });
 

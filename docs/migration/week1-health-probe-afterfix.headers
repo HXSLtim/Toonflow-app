@@ -4,12 +4,12 @@ Vary: Origin
 Access-Control-Allow-Credentials: true
 RateLimit-Policy: 100;w=900
 RateLimit-Limit: 100
-RateLimit-Remaining: 95
-RateLimit-Reset: 735
+RateLimit-Remaining: 94
+RateLimit-Reset: 817
 Content-Type: application/json; charset=utf-8
-Content-Length: 209
-ETag: W/"d1-ZuRRIxAlXPi6O1cxU/eHv1O6v6s"
-Date: Wed, 04 Mar 2026 13:31:28 GMT
+Content-Length: 212
+ETag: W/"d4-gdUT8F/93eDCXq23MI8EPhSBFu0"
+Date: Wed, 04 Mar 2026 13:39:34 GMT
 Connection: keep-alive
 Keep-Alive: timeout=5
 

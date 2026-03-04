@@ -13,34 +13,32 @@ interface CheckResult {
   message?: string;
 }
 
-type DbProbeClient = {
-  raw?: (query: string) => Promise<unknown>;
-  select?: (columns: number) => { first?: () => Promise<unknown> };
-} & ((table: string) => { first?: () => Promise<unknown> });
+type WrappedDbClient = (table: string) => { first?: () => Promise<unknown> };
 
-async function runDbProbe(dbClient: unknown): Promise<void> {
-  const client = dbClient as DbProbeClient;
+async function probeWrappedDb(wrappedDb: unknown): Promise<void> {
+  const wrappedClient = wrappedDb as WrappedDbClient;
 
-  if (typeof client === "function") {
-    const tableProbe = client("sqlite_master");
-    if (tableProbe && typeof tableProbe.first === "function") {
-      await tableProbe.first();
-      return;
-    }
+  if (typeof wrappedClient !== "function") {
+    throw new Error("wrapped db client is not callable");
   }
 
-  if (typeof client?.raw === "function") {
-    await client.raw.call(dbClient, "SELECT 1");
-    return;
+  const probeQuery = wrappedClient("t_user");
+  if (!probeQuery || typeof probeQuery.first !== "function") {
+    throw new Error("wrapped db client does not support first()");
   }
 
-  const selectProbe = client?.select?.(1);
-  if (selectProbe && typeof selectProbe.first === "function") {
-    await selectProbe.first();
-    return;
+  await probeQuery.first();
+}
+
+async function probeRawDb(): Promise<void> {
+  const { db } = await import("@/utils/db");
+  const rawClient = db as { raw?: (query: string) => Promise<unknown> };
+
+  if (typeof rawClient.raw !== "function") {
+    throw new Error("raw db client does not support raw()");
   }
 
-  throw new Error("数据库客户端不支持健康探针查询");
+  await rawClient.raw("SELECT 1");
 }
 
 async function checkDatabase(): Promise<CheckResult> {
@@ -49,10 +47,9 @@ async function checkDatabase(): Promise<CheckResult> {
     const wrappedDb = (await import("@/utils")).default.db;
 
     try {
-      await runDbProbe(wrappedDb);
-    } catch (probeError) {
-      const dbModule = await import("@/utils/db");
-      await runDbProbe(dbModule.db ?? dbModule.default);
+      await probeWrappedDb(wrappedDb);
+    } catch {
+      await probeRawDb();
     }
 
     const latency = Date.now() - start;
