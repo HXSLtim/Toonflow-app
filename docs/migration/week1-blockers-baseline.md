@@ -15,6 +15,11 @@ Pre-fix baseline for immediate blockers that keep migration readiness at `NOT RE
 | W1-BLK-001 | `GET /monitoring/health` returns `503` and reports `db.raw is not a function` in health payload | `docs/migration/migration-readiness.md`, `docs/migration/functional-smoke-report.md`, `docs/migration/smoke-api-health.json` | Health check no longer fails on DB probe path; rerun smoke and update readiness to remove this blocker | `backend-engineer` |
 | W1-BLK-002 | Web smoke checks return `404` for `/` and `/login` under current run mode | `docs/migration/migration-readiness.md`, `docs/migration/functional-smoke-report.md`, `docs/migration/smoke-web-home.raw` | Standardized web smoke run mode yields reachable `/` and `/login`; readiness updated with passing evidence | `frontend-engineer` |
 
+## Week1 Web Smoke Standard
+- Runbook: `docs/migration/week1-web-smoke-runbook.md`
+- This runbook is the canonical Week1 procedure for web startup + endpoint probes.
+- `W1-BLK-002` is considered closed only after evidence is generated following this standard.
+
 ## Baseline Notes
 - This baseline is captured before applying Week1 fixes.
 - Closure requires updated smoke evidence and readiness report refresh.
