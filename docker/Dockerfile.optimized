@@ -2,7 +2,7 @@
 # 构建阶段
 FROM node:24-alpine AS builder
 
-WORKDIR /app
+WORKDIR /workspace
 
 # 定义构建参数
 ARG GIT=github
@@ -41,15 +41,20 @@ RUN if [ "$GIT" = "gitee" ]; then \
     fi && \
     echo "Current version:" && git describe --tags --always
 
-# 安装依赖（利用缓存层）
-RUN yarn install --frozen-lockfile --production=false
+# 安装依赖（前后端分离）
+RUN cd api && yarn install --frozen-lockfile --production=false
+RUN cd web && yarn install --frozen-lockfile --production=false
 
 # 构建应用
-RUN yarn build
+RUN cd api && yarn build
+RUN cd web && yarn build
 
-# 清理开发依赖，只保留生产依赖
-RUN rm -rf node_modules && \
-    yarn install --frozen-lockfile --production
+# 将前端构建产物注入后端静态目录
+RUN rm -rf /workspace/api/scripts/web && mkdir -p /workspace/api/scripts/web && cp -r /workspace/web/dist/. /workspace/api/scripts/web/
+
+# 清理后端开发依赖，只保留后端生产依赖
+RUN rm -rf /workspace/api/node_modules && \
+    cd /workspace/api && yarn install --frozen-lockfile --production
 
 # 生产阶段
 FROM node:24-alpine
@@ -70,12 +75,12 @@ RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
 
 # 复制后端文件
-COPY --from=builder --chown=nodejs:nodejs /app/build ./build
-COPY --from=builder --chown=nodejs:nodejs /app/package.json ./
-COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nodejs:nodejs /workspace/api/build ./build
+COPY --from=builder --chown=nodejs:nodejs /workspace/api/package.json ./
+COPY --from=builder --chown=nodejs:nodejs /workspace/api/node_modules ./node_modules
 
 # 复制静态页面到 nginx 目录
-COPY --from=builder /app/scripts/web /usr/share/nginx/html
+COPY --from=builder /workspace/api/scripts/web /usr/share/nginx/html
 
 # 配置 nginx
 RUN cat > /etc/nginx/http.d/default.conf << 'EOF'
@@ -162,7 +167,7 @@ EXPOSE 80 60000
 
 # 健康检查
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD wget --quiet --tries=1 --spider http://localhost:80/ || exit 1
+    CMD wget --quiet --tries=1 --spider http://127.0.0.1:80/ || exit 1
 
 # 使用 tini 作为 init 进程
 ENTRYPOINT ["/sbin/tini", "--"]

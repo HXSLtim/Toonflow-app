@@ -149,51 +149,34 @@ cd Toonflow-app
 
 ## 安装依赖
 
-### 安装 Yarn（推荐）
+### 安装项目依赖（推荐 npm）
 
 ```bash
-# 使用 npm 安装 Yarn
-npm install -g yarn
-
-# 验证安装
-yarn -v
-```
-
-### 安装项目依赖
-
-```bash
-# 使用 Yarn
-yarn install
-
-# 或使用 npm
 npm install
 ```
 
 **国内用户加速**：
 
 ```bash
-# 使用淘宝镜像
-yarn config set registry https://registry.npmmirror.com
-
-# 或使用 npm
+# 使用 npm 镜像
 npm config set registry https://registry.npmmirror.com
 
 # 然后安装依赖
-yarn install
+npm install
 ```
 
 ## 配置环境
 
 ### 环境变量
 
-创建 `.env` 文件（可选）：
+创建 `api/.env` 文件（可选）：
 
 ```bash
 # 复制示例文件
-cp .env.example .env
+cp api/.env.example api/.env
 
 # 编辑配置
-nano .env
+nano api/.env
 ```
 
 `.env` 文件内容：
@@ -226,26 +209,25 @@ DB_PATH=./data/toonflow.db
 ### 方式一：仅启动后端服务
 
 ```bash
-yarn dev
+npm run dev:api
 ```
 
-服务将在 `http://localhost:60000` 启动。
+后端服务将在 `http://localhost:60000` 启动。
 
-**注意**：此模式仅启动 API 服务，没有前端界面。
-
-### 方式二：启动完整应用（推荐）
+### 方式二：同时启动前后端（推荐联调）
 
 ```bash
-yarn dev:gui
+npm run dev:api
+npm run dev:web
 ```
 
 会同时启动：
 - 后端 API 服务（端口 60000）
-- Electron 桌面应用（内置前端）
+- 前端开发服务（默认端口 5173）
 
 ### 验证服务
 
-访问 `http://localhost:60000` 应该能看到前端页面。
+访问 `http://localhost:5173` 应该能看到前端页面。
 
 API 测试：
 ```bash
@@ -353,7 +335,10 @@ git checkout -b feature/your-feature
 
 ```bash
 # 启动开发服务器
-yarn dev
+npm run dev:api
+
+# 如需联调前端，另开一个终端执行
+npm run dev:web
 
 # 修改代码...
 
@@ -365,13 +350,13 @@ tail -f logs/app.log
 
 ```bash
 # 类型检查
-yarn lint
+npm run lint
 
 # 构建测试
-yarn build
+npm run build
 
 # 运行构建产物
-yarn test
+npm run test
 ```
 
 ### 4. 提交代码
@@ -402,8 +387,8 @@ git push origin feature/your-feature
       "type": "node",
       "request": "launch",
       "name": "Debug Toonflow",
-      "runtimeExecutable": "yarn",
-      "runtimeArgs": ["dev"],
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev:api"],
       "skipFiles": ["<node_internals>/**"],
       "console": "integratedTerminal"
     }
@@ -418,7 +403,7 @@ git push origin feature/your-feature
 
 ```bash
 # 启动调试模式
-yarn dev --inspect
+npm --prefix api run dev
 
 # 打开 Chrome
 # 访问 chrome://inspect
@@ -464,12 +449,12 @@ EXPLAIN QUERY PLAN SELECT * FROM t_project WHERE id = 1;
 
 ```bash
 # 清除缓存
-yarn cache clean
+npm cache clean --force
 rm -rf node_modules
-rm yarn.lock
+rm package-lock.json
 
 # 重新安装
-yarn install
+npm install
 
 # 如果还是失败，尝试使用 npm
 npm install
@@ -484,7 +469,7 @@ npm install
 PORT=60001
 
 # 方式二：启动时指定
-PORT=60001 yarn dev
+PORT=60001 npm run dev:api
 ```
 
 或杀死占用端口的进程：
@@ -515,10 +500,10 @@ kill -9 <PID>
 
 ```bash
 # 重新生成类型定义
-yarn build
+npm run build
 
 # 或手动运行类型检查
-yarn lint
+npm run lint
 ```
 
 ### Q: 热重载不工作？
@@ -541,7 +526,7 @@ yarn lint
 rm data/toonflow.db
 
 # 重启服务（会自动重新创建）
-yarn dev
+npm run dev:api
 ```
 
 ## 性能优化
@@ -559,10 +544,10 @@ yarn dev
 
 ```bash
 # 使用增量构建
-yarn build --incremental
+npm run build:api
 
-# 并行构建
-yarn build --parallel
+# 构建前端
+npm run build:web
 ```
 
 ## 下一步

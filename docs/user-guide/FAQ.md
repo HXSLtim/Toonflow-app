@@ -394,10 +394,10 @@ kill -9 <PID>
 ```bash
 # 重新安装依赖
 rm -rf node_modules
-yarn install
+npm install
 
 # 重新构建
-yarn build
+npm run build
 ```
 
 ### Q: 日志文件在哪里？
@@ -495,16 +495,16 @@ pm2 start all
 ### Q: 如何自定义前端界面？
 
 **A**:
-1. 克隆前端仓库：
+1. 在本仓库进入前端目录：
    ```bash
-   git clone https://github.com/HBAI-Ltd/Toonflow-web.git
+   cd web
    ```
 2. 修改代码
 3. 构建：
    ```bash
-   yarn build
+   npm run build
    ```
-4. 复制 `dist/` 到后端的 `scripts/web/`
+4. 生成产物位于 `web/dist/`，容器构建会自动拷贝到后端静态目录
 
 ### Q: 如何开发自定义插件？
 

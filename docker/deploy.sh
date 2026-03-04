@@ -6,6 +6,9 @@
 
 set -e
 
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+PROJECT_ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
+
 # 颜色输出
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -36,11 +39,11 @@ fi
 # 根据环境选择配置文件
 case $ENV in
     local)
-        COMPOSE_FILE="docker/docker-compose.local.yml"
+        COMPOSE_FILE="$SCRIPT_DIR/docker-compose.local.yml"
         echo -e "${YELLOW}使用本地开发配置${NC}"
         ;;
     prod)
-        COMPOSE_FILE="docker/docker-compose.prod.yml"
+        COMPOSE_FILE="$SCRIPT_DIR/docker-compose.prod.yml"
         echo -e "${YELLOW}使用生产环境配置${NC}"
         ;;
     *)
@@ -58,7 +61,9 @@ fi
 
 # 创建必要的目录
 echo -e "${GREEN}创建必要的目录...${NC}"
-mkdir -p logs data uploads
+mkdir -p "$SCRIPT_DIR/logs" "$SCRIPT_DIR/data" "$SCRIPT_DIR/uploads"
+
+cd "$PROJECT_ROOT"
 
 # 停止现有容器
 echo -e "${GREEN}停止现有容器...${NC}"

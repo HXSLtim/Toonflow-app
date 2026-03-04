@@ -19,28 +19,33 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "24"
-          cache: "yarn"
+          cache: "npm"
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: |
+          npm --prefix api install
+          npm --prefix web install
 
       - name: TypeScript check
-        run: yarn lint
+        run: npm run lint
 
       - name: Check for TODO/FIXME comments
         run: |
           echo "Checking for TODO/FIXME comments..."
-          grep -r "TODO\|FIXME" src/ || echo "No TODO/FIXME found"
+          grep -r "TODO\|FIXME" api/src web/src || echo "No TODO/FIXME found"
 
       - name: Check file sizes
         run: |
           echo "Checking for large files..."
-          find src -type f -size +100k -exec ls -lh {} \; || echo "No large files found"
+          find api/src web/src -type f -size +100k -exec ls -lh {} \; || echo "No large files found"
 
       - name: Dependency audit
-        run: yarn audit --level moderate || true
+        run: |
+          npm --prefix api audit --audit-level=moderate || true
+          npm --prefix web audit --audit-level=moderate || true
 
       - name: Check for duplicate dependencies
         run: |
           echo "Checking for duplicate dependencies..."
-          yarn list --pattern "react|express|axios" --depth=0 || true
+          npm --prefix api ls express axios --depth=0 || true
+          npm --prefix web ls react axios --depth=0 || true

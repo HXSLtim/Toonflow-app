@@ -1,5 +1,7 @@
 # Electron 移除与 shadcn/ui + Tailwind CSS 重构设计文档
 
+> ℹ️ 历史方案归档：本文记录迁移设计过程。当前落地方案已完成纯 Web 迁移，前端技术栈为 React + shadcn/ui + Tailwind CSS（非文中早期 Vue 方案）。
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **目标：** 将 Toonflow 从 Electron 桌面应用转换为纯 Web 应用，使用 shadcn-vue + Tailwind CSS 重构前端 UI，保持所有现有功能完全一致。

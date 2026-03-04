@@ -43,7 +43,7 @@ npm run serve
 yarn add swagger-ui-express yamljs
 ```
 
-2. 在 `src/app.ts` 中添加：
+2. 在 `api/src/app.ts` 中添加：
 ```typescript
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
@@ -58,10 +58,10 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 1. 安装依赖：
 ```bash
-yarn add redoc-express
+npm --prefix api install redoc-express
 ```
 
-2. 在 `src/app.ts` 中添加：
+2. 在 `api/src/app.ts` 中添加：
 ```typescript
 import { serve, setup } from 'redoc-express';
 
@@ -79,9 +79,9 @@ app.get('/docs', serve, setup({
 
 ```bash
 # 复制到 public 目录
-cp docs/api/index.html scripts/web/api-docs.html
+cp docs/api/index.html web/public/api-docs.html
 
-# 访问 http://localhost:60000/api-docs.html
+# 访问 http://localhost:5173/api-docs.html（开发环境）
 ```
 
 ## 部署到生产环境
@@ -140,14 +140,14 @@ netlify deploy
 
 ```dockerfile
 # 安装文档依赖
-WORKDIR /app/docs/api
+WORKDIR /workspace/docs/api
 RUN npm install
 
 # 生成文档
 RUN npm run generate-html
 
 # 复制到静态文件目录
-RUN cp index.html /app/scripts/web/api-docs.html
+RUN cp index.html /workspace/web/public/api-docs.html
 ```
 
 ## 自动化
@@ -163,7 +163,7 @@ on:
   push:
     paths:
       - 'docs/api/openapi.yaml'
-      - 'src/routes/**'
+      - 'api/src/routes/**'
 
 jobs:
   generate:

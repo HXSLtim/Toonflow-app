@@ -102,34 +102,31 @@ git checkout -b feature/your-feature-name
 ### 4. 安装依赖
 
 ```bash
-# 使用 Yarn
-yarn install
-
-# 或使用 npm
+# 安装工作区依赖
 npm install
 ```
 
 ### 5. 开发
 
 ```bash
-# 启动开发服务器
-yarn dev
+# 启动后端 API
+npm run dev:api
 
-# 或启动完整的 GUI 模式
-yarn dev:gui
+# 启动前端开发服务
+npm run dev:web
 ```
 
 ### 6. 测试
 
 ```bash
 # 运行类型检查
-yarn lint
+npm run lint
 
 # 构建测试
-yarn build
+npm run build
 
 # 运行构建产物
-yarn test
+npm run test
 ```
 
 ### 7. 提交代码
@@ -471,7 +468,7 @@ Closes #123
 
 ```bash
 # 启动调试模式
-yarn dev --inspect
+npm --prefix api run dev
 
 # 使用 Chrome DevTools
 # 打开 chrome://inspect

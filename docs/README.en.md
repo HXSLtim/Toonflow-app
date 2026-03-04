@@ -210,12 +210,7 @@ pm2 monit             # Monitoring panel
 
 #### 6. Deploy the Frontend Website
 
-To deploy or customize the frontend separately, refer to the frontend repo:
-
-- **GitHub**: [Toonflow-web](https://github.com/HBAI-Ltd/Toonflow-web)
-- **Gitee**: [Toonflow-web](https://gitee.com/HBAI-Ltd/Toonflow-web)
-
-> 💡 **Note**: This repo includes pre-compiled frontend assets; regular users don’t need to deploy frontend separately. The frontend repo is for developers needing secondary development.
+Frontend source is included in this repo under `web/`. Run `npm run build:web` to generate `web/dist`; Docker build then copies the web assets into the backend static directory automatically.
 
 ---
 
@@ -252,89 +247,50 @@ To deploy or customize the frontend separately, refer to the frontend repo:
    yarn install
    ```
 
-3. **Start Development Server**
+3. **Start Development Servers**
 
-   - Launch dev server with Node.js:
+   The repository now uses a split layout: `api/` backend + `web/` frontend.
 
-     ```bash
-     yarn dev #port 60000
-     ```
+   ```bash
+   # Start backend (port 60000)
+   npm run dev:api
 
-   - Use Bun to quickly start dev server:
-
-     ```bash
-     yarn bun:dev #port 60000
-     ```
+   # Start frontend (Vite dev server)
+   npm run dev:web
+   ```
 
 4. **Build the Project**
 
-   - Compile and generate TypeScript files:
-
-     ```bash
-     yarn build
-     ```
-
-   - Package as a Windows executable:
-
-     ```bash
-     yarn dist:win
-     ```
+   ```bash
+   # Build backend + frontend
+   npm run build
+   ```
 
 5. **Code Quality Check**
 
-   - Lint globally for syntax and style:
-
-     ```bash
-     yarn lint
-     ```
+   ```bash
+   npm run lint
+   npm run test
+   ```
 
 ## Frontend Development
 
-To modify the frontend, go to the frontend repo:
-
-- **GitHub**: [Toonflow-web](https://github.com/HBAI-Ltd/Toonflow-web)
-- **Gitee**: [Toonflow-web](https://gitee.com/HBAI-Ltd/Toonflow-web)
-
-After building the frontend, copy the contents of the `dist` folder into this project’s `scripts/web` directory for integration.
+Frontend source code is included in this repository under `web/`.
 
 ## Project Structure
 
 ```
-📂 docs/                    # Documentation
-📂 scripts/                 # Build scripts and static resources
-│  └─ 📂 web/              # Embedded frontend build output
-📂 src/
-├─ 📂 agents/              # AI Agent modules
-├─ 📂 lib/                 # Shared libs (DB init, response format)
-├─ 📂 middleware/          # Middleware
-├─ 📂 routes/              # Routing modules
-│  ├─ 📂 assets/           # Asset management
-│  ├─ 📂 index/            # Home page
-│  ├─ 📂 novel/            # Novel management
-│  ├─ 📂 other/            # Other features
-│  ├─ 📂 outline/          # Outline management
-│  ├─ 📂 project/          # Project management
-│  ├─ 📂 prompt/           # Prompt management
-│  ├─ 📂 script/           # Script generation
-│  ├─ 📂 setting/          # System settings
-│  ├─ 📂 storyboard/       # Storyboard management
-│  ├─ 📂 task/             # Task management
-│  ├─ 📂 user/             # User management
-│  └─ 📂 video/            # Video generation
-├─ 📂 types/               # TypeScript type declarations
-├─ 📂 utils/               # Utility functions
-├─ 📄 app.ts               # App entry point
-├─ 📄 core.ts              # Routing core
-├─ 📄 env.ts               # Env variable handling
-├─ 📄 err.ts               # Error handling
-├─ 📄 router.ts            # Route registration
-└─ 📄 utils.ts             # Common tools
-📂 uploads/                 # Uploads
-📄 LICENSE                  # License
-📄 NOTICES.txt              # 3rd-party notices
-📄 package.json             # Project config
-📄 README.md                # Project description
-📄 tsconfig.json            # TypeScript config
+📂 api/                      # Express + TypeScript backend
+│  ├─ 📂 src/
+│  ├─ 📂 scripts/
+│  ├─ 📂 env/
+│  └─ 📄 package.json
+📂 web/                      # React + Vite frontend
+│  ├─ 📂 src/
+│  └─ 📄 package.json
+📂 docker/                   # Docker and deployment scripts
+📂 docs/                     # Documentation
+📄 package.json              # Root workspace scripts
 ```
 
 ---
@@ -343,10 +299,7 @@ After building the frontend, copy the contents of the `dist` folder into this pr
 
 | Repository        | Description                           | GitHub                                             | Gitee                                            |
 | ----------------- | ------------------------------------- | -------------------------------------------------- | ------------------------------------------------ |
-| **Toonflow-app**  | Full client (this repo, for users)    | [GitHub](https://github.com/HBAI-Ltd/Toonflow-app) | [Gitee](https://gitee.com/HBAI-Ltd/Toonflow-app) |
-| **Toonflow-web**  | Frontend source (for devs)            | [GitHub](https://github.com/HBAI-Ltd/Toonflow-web) | [Gitee](https://gitee.com/HBAI-Ltd/Toonflow-web) |
-
-> 💡 **Tip**: If you just want to use Toonflow, download the client from this repo. The web repo is only for frontend customization/development.
+| **Toonflow-app**  | Full-stack repo (api + web)           | [GitHub](https://github.com/HBAI-Ltd/Toonflow-app) | [Gitee](https://gitee.com/HBAI-Ltd/Toonflow-app) |
 
 ---
 
@@ -423,7 +376,6 @@ Thanks to the following open-source projects for empowering Toonflow:
 - [Axios](https://axios-http.com/) – Promise-based HTTP client
 - [Zod](https://zod.dev/) – TypeScript-first schema validation
 - [Aigne](https://github.com/aigne-com/aigne) – Unified LLM API middleware
-- [Electron](https://www.electronjs.org/) – Cross-platform desktop app framework
 
 Thanks to the following organizations/individuals for supporting Toonflow:
 

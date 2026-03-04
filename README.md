@@ -304,12 +304,7 @@ pm2 monit             # 监控面板
 
 #### 6. 部署前端网站
 
-如需单独部署或定制前端界面，请参考前端仓库：
-
-- **GitHub**：[Toonflow-web](https://github.com/HBAI-Ltd/Toonflow-web)
-- **Gitee**：[Toonflow-web](https://gitee.com/HBAI-Ltd/Toonflow-web)
-
-> 💡 **说明**：本仓库已内置编译好的前端资源，普通用户无需单独部署前端。前端仓库仅供需要二次开发的开发者使用。
+前端代码已内置于 `web/`，部署时执行 `npm run build:web` 后会自动生成 `web/dist`。如需容器化部署，Docker 构建会自动将前端产物拷贝到后端静态目录，无需额外拷贝步骤。
 
 ---
 
@@ -353,64 +348,34 @@ pm2 monit             # 监控面板
 
 3. **启动开发环境**
 
-   本项目包含 **后端 API 服务** 和 **前端页面** 两部分，请根据需要选择启动方式：
+   本项目采用前后端分离目录：`api/`（后端）+ `web/`（前端）。
 
-   - **方式一：仅启动后端服务（开发调试用）**
+   ```bash
+   # 启动后端（端口 60000）
+   npm run dev:api
 
-     ```bash
-     yarn dev
-     ```
+   # 启动前端（Vite 本地开发）
+   npm run dev:web
+   ```
 
-     > ⚠️ 此命令仅启动后端 API 服务（端口 60000），**不包含前端页面**。直接访问 `http://localhost:60000` 只能调用 API 接口，无法看到完整的网页界面。如需同时使用前端页面，请配合前端项目单独启动，或使用下方的 GUI 模式。
+   > 推荐同时启动前后端进行联调：前端访问 `http://localhost:5173`，后端 API 默认 `http://localhost:60000`。
 
-   - **方式二：启动 Electron 桌面客户端（推荐完整体验）**
+4. **项目构建**
 
-     ```bash
-     yarn dev:gui
-     ```
-
-     > 此命令会同时启动后端服务和 Electron 桌面窗口，自带内置前端页面，开箱即用，无需额外配置。适合想要完整体验所有功能的开发者。
-
-   **两种模式对比：**
-
-   | 命令           | 启动内容                 | 前端页面 | 适用场景                         |
-   | -------------- | ------------------------ | -------- | -------------------------------- |
-   | `yarn dev`     | 仅后端 API（端口 60000） | ❌ 无    | 后端开发调试、配合前端项目联调   |
-   | `yarn dev:gui` | 后端 + Electron 桌面端   | ✅ 内置  | 完整功能体验、桌面客户端开发调试 |
-
-4. **项目打包**
-
-   - 编译并生成 TypeScript 文件：
-
-     ```bash
-     yarn build
-     ```
-
-   - 打包为 Windows 平台可执行程序：
-
-     ```bash
-     yarn dist:win
-     ```
-
-   - 打包为 Mac 平台可执行程序：
-
-     ```bash
-     yarn dist:mac
-     ```
-
-   - 打包为 Linux 平台可执行程序：
-
-     ```bash
-     yarn dist:linux
-     ```
+   ```bash
+   # 构建后端 + 前端
+   npm run build
+   ```
 
 5. **代码质量检查**
 
-   - 进行全局语法和规范检查：
+   ```bash
+   # 全量 lint
+   npm run lint
 
-     ```bash
-     yarn lint
-     ```
+   # 后端测试
+   npm run test
+   ```
 
 6. **AI 调试面板（可选）**
 
@@ -422,52 +387,22 @@ pm2 monit             # 监控面板
 
 ## 前端开发
 
-如需修改前端界面，请前往前端仓库进行开发：
-
-- **GitHub**：[Toonflow-web](https://github.com/HBAI-Ltd/Toonflow-web)
-- **Gitee**：[Toonflow-web](https://gitee.com/HBAI-Ltd/Toonflow-web)
-
-前端构建后，将 `dist` 目录内容复制到本项目的 `scripts/web` 目录即可集成。
+前端源码已内置于本仓库 `web/` 目录，可直接在本仓库中进行开发与构建。
 
 ## 项目结构
 
 ```
-📂 docker/                   # Docker 配置文件
-📂 docs/                    # 文档资源
-📂 scripts/                 # 构建脚本与静态资源
-│  └─ 📂 web/              # 前端编译产物（内置）
-📂 src/
-├─ 📂 agents/              # AI Agent 模块
-├─ 📂 lib/                 # 公共库（数据库初始化、响应格式）
-├─ 📂 middleware/          # 中间件
-├─ 📂 routes/              # 路由模块
-│  ├─ 📂 assets/           # 素材管理
-│  ├─ 📂 index/            # 首页
-│  ├─ 📂 novel/            # 小说管理
-│  ├─ 📂 other/            # 其他功能
-│  ├─ 📂 outline/          # 大纲管理
-│  ├─ 📂 project/          # 项目管理
-│  ├─ 📂 prompt/           # 提示词管理
-│  ├─ 📂 script/           # 剧本生成
-│  ├─ 📂 setting/          # 系统设置
-│  ├─ 📂 storyboard/       # 分镜管理
-│  ├─ 📂 task/             # 任务管理
-│  ├─ 📂 user/             # 用户管理
-│  └─ 📂 video/            # 视频生成
-├─ 📂 types/               # TypeScript 类型声明
-├─ 📂 utils/               # 工具函数
-├─ 📄 app.ts               # 应用入口
-├─ 📄 core.ts              # 路由核心
-├─ 📄 env.ts               # 环境变量处理
-├─ 📄 err.ts               # 错误处理
-├─ 📄 router.ts            # 路由注册
-└─ 📄 utils.ts             # 通用工具
-📂 uploads/                 # 上传文件目录
-📄 LICENSE                  # 许可证
-📄 NOTICES.txt              # 第三方依赖声明
-📄 package.json             # 项目配置
-📄 README.md                # 项目说明
-📄 tsconfig.json            # TypeScript 配置
+📂 api/                      # Express + TypeScript 后端
+│  ├─ 📂 src/               # 后端源码
+│  ├─ 📂 scripts/           # 后端构建脚本
+│  ├─ 📂 env/               # 后端环境配置
+│  └─ 📄 package.json
+📂 web/                      # React + Vite 前端
+│  ├─ 📂 src/
+│  └─ 📄 package.json
+📂 docker/                   # Docker 与部署脚本
+📂 docs/                     # 文档
+📄 package.json              # 根工作区脚本入口
 ```
 
 ---
@@ -476,10 +411,7 @@ pm2 monit             # 监控面板
 
 | 仓库             | 说明                               | GitHub                                             | Gitee                                            |
 | ---------------- | ---------------------------------- | -------------------------------------------------- | ------------------------------------------------ |
-| **Toonflow-app** | 完整客户端（本仓库，推荐普通用户） | [GitHub](https://github.com/HBAI-Ltd/Toonflow-app) | [Gitee](https://gitee.com/HBAI-Ltd/Toonflow-app) |
-| **Toonflow-web** | 前端源代码（适合前端开发者）       | [GitHub](https://github.com/HBAI-Ltd/Toonflow-web) | [Gitee](https://gitee.com/HBAI-Ltd/Toonflow-web) |
-
-> 💡 **提示**：如果您只是想使用 Toonflow，直接下载本仓库的客户端即可。前端仓库仅供需要二次开发或定制前端界面的开发者使用。
+| **Toonflow-app** | 前后端一体仓库（本仓库）           | [GitHub](https://github.com/HBAI-Ltd/Toonflow-app) | [Gitee](https://gitee.com/HBAI-Ltd/Toonflow-app) |
 
 ---
 
@@ -571,7 +503,6 @@ Toonflow 基于 AGPL-3.0 协议开源发布，许可证详情：https://www.gnu.
 - [Axios](https://axios-http.com/) - 基于 Promise 的 HTTP 客户端
 - [Zod](https://zod.dev/) - TypeScript 优先的模式验证库
 - [Aigne](https://github.com/aigne-com/aigne) - LLM API 统一管理与接入中间件
-- [Electron](https://www.electronjs.org/) - 跨平台桌面应用开发框架
 
 感谢以下组织/单位/个人为 Toonflow 提供支持：
 

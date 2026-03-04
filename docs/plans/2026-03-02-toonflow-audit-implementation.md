@@ -1,5 +1,7 @@
 # Toonflow 项目全面审计实施计划
 
+> ⚠️ 历史实施文档：该计划产生于迁移前阶段，含 Electron 术语与旧流程；当前代码组织为 `api/` + `web/`。
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development to implement this plan task-by-task.
 
 **Goal:** 对 Toonflow 项目进行全面审计，识别用户体验、功能完整性、代码质量方面的问题，并立即修复高优先级问题

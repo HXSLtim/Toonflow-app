@@ -96,7 +96,6 @@ logger.clearContext();
 
 - **开发环境**: `项目根目录/logs/`
 - **生产环境**: `项目根目录/logs/`
-- **Electron 环境**: `userData/logs/`
 
 ## 环境变量配置
 

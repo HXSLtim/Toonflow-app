@@ -1,5 +1,4 @@
 # 生产环境优化版本
-version: '3.8'
 
 services:
   toonflow:
@@ -21,6 +20,8 @@ services:
     environment:
       - NODE_ENV=prod
       - TZ=Asia/Shanghai
+    env_file:
+      - ../api/env/.env.prod
 
     volumes:
       # 持久化日志
@@ -42,7 +43,7 @@ services:
 
     # 健康检查
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:80/"]
       interval: 30s
       timeout: 10s
       retries: 3

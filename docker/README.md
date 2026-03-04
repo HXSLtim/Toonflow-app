@@ -49,10 +49,12 @@ docker run -d \
 
 ### 环境变量
 
-复制 `.env.example` 为 `.env` 并修改配置：
+Docker Compose 会自动加载 `api/env/.env.dev`（本地）和 `api/env/.env.prod`（生产）。
+
+如需自定义变量，可复制 `api/.env.example`：
 
 ```bash
-cp .env.example .env
+cp api/.env.example api/.env
 ```
 
 主要配置项：
@@ -61,6 +63,8 @@ cp .env.example .env
 - `API_PORT`: API 端口 (默认 60000)
 - `TAG`: Docker 镜像标签
 - `TZ`: 时区设置
+
+> 说明：`docker-compose.*.yml` 位于 `docker/` 目录，`./logs`、`./data`、`./uploads` 均指向 `docker/` 下同名目录。
 
 ### 资源限制
 

@@ -17,13 +17,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "24"
-          cache: "yarn"
+          cache: "npm"
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: |
+          npm --prefix api install
+          npm --prefix web install
 
       - name: TypeScript type check
-        run: yarn lint
+        run: npm run lint
 
   build:
     runs-on: ubuntu-latest
@@ -36,19 +38,23 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "24"
-          cache: "yarn"
+          cache: "npm"
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: |
+          npm --prefix api install
+          npm --prefix web install
 
       - name: Build application
-        run: yarn build
+        run: npm run build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-output
-          path: build/
+          path: |
+            api/build/
+            web/dist/
           retention-days: 7
 
   docker-build:
@@ -81,13 +87,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "24"
-          cache: "yarn"
+          cache: "npm"
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: |
+          npm --prefix api install
+          npm --prefix web install
 
       - name: Run npm audit
-        run: yarn audit --level moderate || true
+        run: |
+          npm --prefix api audit --audit-level=moderate || true
+          npm --prefix web audit --audit-level=moderate || true
 
       - name: Check for secrets
         uses: trufflesecurity/trufflehog@main

@@ -22,7 +22,7 @@ Toonflow 是一个基于 Node.js + Express + SQLite 的 AI 短剧创作平台，
 
 ### 前端技术栈
 
-前端代码位于独立仓库 [Toonflow-web](https://github.com/HBAI-Ltd/Toonflow-web)
+前端代码已迁移到当前仓库 `web/` 目录，与后端 `api/` 并存
 
 - **框架**: React 18
 - **构建工具**: Vite
@@ -73,51 +73,19 @@ Toonflow 是一个基于 Node.js + Express + SQLite 的 AI 短剧创作平台，
 
 ```
 Toonflow-app/
-├── src/                      # 源代码
-│   ├── agents/              # AI Agent 模块
-│   │   └── storyboard/      # 分镜生成 Agent
-│   ├── lib/                 # 公共库
-│   │   ├── fixDB.ts         # 数据库初始化
-│   │   └── responseFormat.ts # 响应格式化
-│   ├── middleware/          # 中间件
-│   │   └── middleware.ts    # JWT 认证等
-│   ├── routes/              # 路由模块
-│   │   ├── assets/          # 素材管理
-│   │   ├── novel/           # 小说管理
-│   │   ├── outline/         # 大纲管理
-│   │   ├── project/         # 项目管理
-│   │   ├── script/          # 剧本生成
-│   │   ├── storyboard/      # 分镜管理
-│   │   ├── video/           # 视频生成
-│   │   ├── setting/         # 系统设置
-│   │   ├── user/            # 用户管理
-│   │   ├── task/            # 任务管理
-│   │   └── other/           # 其他功能
-│   ├── types/               # TypeScript 类型
-│   │   └── database.d.ts    # 数据库类型定义
-│   ├── utils/               # 工具函数
-│   │   └── ai/              # AI 相关工具
-│   ├── app.ts               # 应用入口
-│   ├── core.ts              # 核心路由
-│   ├── router.ts            # 路由注册
-│   ├── env.ts               # 环境变量
-│   ├── err.ts               # 错误处理
-│   ├── logger.ts            # 日志系统
-│   └── utils.ts             # 通用工具
-├── scripts/                 # 构建脚本
-│   ├── web/                 # 前端编译产物
-│   ├── build.ts             # 构建脚本
-│   └── license.ts           # 许可证生成
-├── docker/                  # Docker 配置
-│   ├── docker-compose.yml   # 在线部署
-│   └── docker-compose.local.yml # 本地构建
-├── docs/                    # 文档
-├── uploads/                 # 上传文件
-├── data/                    # 数据库文件
-├── logs/                    # 日志文件
-├── package.json             # 项目配置
-├── tsconfig.json            # TypeScript 配置
-└── README.md                # 项目说明
+├── api/                      # 后端（Express + TypeScript）
+│   ├── src/                  # 后端源码
+│   ├── scripts/              # 后端构建脚本
+│   ├── env/                  # 后端环境文件
+│   ├── package.json
+│   └── tsconfig.json
+├── web/                      # 前端（React + Vite）
+│   ├── src/                  # 前端源码
+│   ├── package.json
+│   └── vite.config.ts
+├── docker/                   # Docker 与部署脚本
+├── docs/                     # 文档
+└── package.json              # 根工作区脚本
 ```
 
 ## 核心模块
@@ -135,7 +103,7 @@ app.use(morgan('combined'));
 
 // 静态文件服务
 app.use('/uploads', express.static('uploads'));
-app.use('/', express.static('scripts/web'));
+// 前端静态资源由 web 构建产物提供（Nginx 或 Vite）
 
 // 注册路由
 await registerRoutes(app);
@@ -215,7 +183,7 @@ const knexDb = knex({
 
 #### 数据模型
 
-所有数据表类型定义在 `src/types/database.d.ts`：
+所有数据表类型定义在 `api/src/types/database.d.ts`：
 
 ```typescript
 export interface t_project {
@@ -617,7 +585,7 @@ services:
     volumes:
       - ./data:/app/data
       - ./uploads:/app/uploads
-      - ./logs:/app/logs
+      - ./logs:/var/log
     environment:
       - NODE_ENV=production
       - PORT=60000

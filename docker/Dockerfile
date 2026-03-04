@@ -1,7 +1,7 @@
 # 构建阶段
 FROM node:24-alpine AS builder
 
-WORKDIR /app
+WORKDIR /workspace
 
 # 定义构建参数
 ARG GIT=github
@@ -40,9 +40,14 @@ RUN if [ "$GIT" = "gitee" ]; then \
     fi && \
     echo "Current version:" && git describe --tags --always
 
-RUN yarn install --frozen-lockfile
+RUN cd api && yarn install --frozen-lockfile
+RUN cd web && yarn install --frozen-lockfile
 
-RUN yarn build
+RUN cd api && yarn build
+RUN cd web && yarn build
+
+# 将前端构建产物注入后端静态目录
+RUN rm -rf /workspace/api/scripts/web && mkdir -p /workspace/api/scripts/web && cp -r /workspace/web/dist/. /workspace/api/scripts/web/
 
 # 生产阶段
 FROM node:24-alpine
@@ -57,12 +62,12 @@ RUN apk add --no-cache nginx supervisor && \
     npm install -g pm2
 
 # 复制后端文件
-COPY --from=builder /app/build ./build
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/yarn.lock ./
+COPY --from=builder /workspace/api/build ./build
+COPY --from=builder /workspace/api/package.json ./
+COPY --from=builder /workspace/api/yarn.lock ./
 
 # 复制静态页面到 nginx 目录
-COPY --from=builder /app/scripts/web /usr/share/nginx/html
+COPY --from=builder /workspace/api/scripts/web /usr/share/nginx/html
 
 # 只安装生产依赖
 RUN yarn install --frozen-lockfile --production
