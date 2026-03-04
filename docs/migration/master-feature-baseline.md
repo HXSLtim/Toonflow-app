@@ -1,25 +1,20 @@
-# Master 功能基线清单
+# Master Feature Baseline
 
-> 目的：提供 `master` 到 migration worktree 的功能对齐基线（parity reference）。
+> Purpose: parity reference checklist from `master` routes/pages/scripts.
 
-- 基线分支：`master`
-- 基线提交：`976fa5aa56df85c17b8f3a4076908eca83a7b5bf`
-- 基线范围：`src/routes/**`、`app/src/pages/**`、根 `package.json` 的 `scripts`
+- Baseline branch: `master`
+- Baseline commit: `976fa5aa56df85c17b8f3a4076908eca83a7b5bf`
+- Generated at: `2026-03-04T12:50:14.057Z`
+- Scope: `src/routes/**`, `app/src/pages/**`, root `package.json` scripts
 
-## 清单统计
+## Summary
 
-- 路由条目：96
-- 页面条目：11
-- 脚本条目：12
-- 总条目：119
+- Route items: 96
+- Page items: 11
+- Script items: 12
+- Total items: 119
 
-## 使用说明
-
-- 迁移端完成对应能力后，将该条目标记为 `[x]`。
-- 每个条目附带证据路径（`evidence`）用于快速核验。
-- 若条目发生拆分/合并，需在 parity matrix 中记录映射关系。
-
-## 1) 后端路由基线（`src/routes/**`）
+## 1) API Route Baseline (`src/routes/**`)
 
 - [ ] `src/routes/assets/addAssets.ts` — evidence: `src/routes/assets/addAssets.ts`
 - [ ] `src/routes/assets/delAssets.ts` — evidence: `src/routes/assets/delAssets.ts`
@@ -118,7 +113,7 @@
 - [ ] `src/routes/video/saveVideo.ts` — evidence: `src/routes/video/saveVideo.ts`
 - [ ] `src/routes/video/upDateVideoConfig.ts` — evidence: `src/routes/video/upDateVideoConfig.ts`
 
-## 2) 前端页面基线（`app/src/pages/**`）
+## 2) Frontend Page Baseline (`app/src/pages/**`)
 
 - [ ] `app/src/pages/ComponentsShowcase.tsx` — evidence: `app/src/pages/ComponentsShowcase.tsx`
 - [ ] `app/src/pages/Dashboard.tsx` — evidence: `app/src/pages/Dashboard.tsx`
@@ -132,24 +127,24 @@
 - [ ] `app/src/pages/Storyboards.tsx` — evidence: `app/src/pages/Storyboards.tsx`
 - [ ] `app/src/pages/Videos.tsx` — evidence: `app/src/pages/Videos.tsx`
 
-## 3) 根脚本基线（`package.json` `scripts`）
+## 3) Root Script Baseline (`package.json` `scripts`)
 
-- [ ] `dev` → `nodemon --inspect --exec tsx src/app.ts` — evidence: `package.json#scripts.dev`
-- [ ] `lint` → `tsc --noEmit` — evidence: `package.json#scripts.lint`
-- [ ] `build` → `cross-env NODE_ENV=prod tsx scripts/build.ts` — evidence: `package.json#scripts.build`
-- [ ] `test` → `vitest --run` — evidence: `package.json#scripts.test`
-- [ ] `test:watch` → `vitest` — evidence: `package.json#scripts.test:watch`
-- [ ] `test:ui` → `vitest --ui` — evidence: `package.json#scripts.test:ui`
-- [ ] `test:coverage` → `vitest --run --coverage` — evidence: `package.json#scripts.test:coverage`
-- [ ] `test:prod` → `cross-env NODE_ENV=prod node build/app.js` — evidence: `package.json#scripts.test:prod`
-- [ ] `docker:build` → `docker-compose -f docker/docker-compose.yml up -d --build` — evidence: `package.json#scripts.docker:build`
-- [ ] `docker:local` → `docker-compose -f docker/docker-compose.local.yml up -d --build` — evidence: `package.json#scripts.docker:local`
-- [ ] `debug:ai` → `npx @ai-sdk/devtools` — evidence: `package.json#scripts.debug:ai`
-- [ ] `license` → `bun run scripts/license.ts` — evidence: `package.json#scripts.license`
+- [ ] `dev` -> `nodemon --inspect --exec tsx src/app.ts` — evidence: `package.json#scripts.dev`
+- [ ] `lint` -> `tsc --noEmit` — evidence: `package.json#scripts.lint`
+- [ ] `build` -> `cross-env NODE_ENV=prod tsx scripts/build.ts` — evidence: `package.json#scripts.build`
+- [ ] `test` -> `vitest --run` — evidence: `package.json#scripts.test`
+- [ ] `test:watch` -> `vitest` — evidence: `package.json#scripts.test:watch`
+- [ ] `test:ui` -> `vitest --ui` — evidence: `package.json#scripts.test:ui`
+- [ ] `test:coverage` -> `vitest --run --coverage` — evidence: `package.json#scripts.test:coverage`
+- [ ] `test:prod` -> `cross-env NODE_ENV=prod node build/app.js` — evidence: `package.json#scripts.test:prod`
+- [ ] `docker:build` -> `docker-compose -f docker/docker-compose.yml up -d --build` — evidence: `package.json#scripts.docker:build`
+- [ ] `docker:local` -> `docker-compose -f docker/docker-compose.local.yml up -d --build` — evidence: `package.json#scripts.docker:local`
+- [ ] `debug:ai` -> `npx @ai-sdk/devtools` — evidence: `package.json#scripts.debug:ai`
+- [ ] `license` -> `bun run scripts/license.ts` — evidence: `package.json#scripts.license`
 
-## 4) 采样证据命令
+## 4) Verification Commands
 
-- `git -C /c/Users/a2778/Desktop/Code/Toonflow-app rev-parse HEAD`
-- `git -C /c/Users/a2778/Desktop/Code/Toonflow-app ls-files "src/routes/**"`
-- `git -C /c/Users/a2778/Desktop/Code/Toonflow-app ls-files "app/src/pages/**"`
-- `Read /c/Users/a2778/Desktop/Code/Toonflow-app/package.json`
+- `git -C C:/Users/a2778/Desktop/Code/Toonflow-app rev-parse HEAD`
+- `git -C C:/Users/a2778/Desktop/Code/Toonflow-app ls-files src/routes`
+- `git -C C:/Users/a2778/Desktop/Code/Toonflow-app ls-files app/src/pages`
+- `node -e "const pkg=require(+root+/package.json); console.log(Object.keys(pkg.scripts||{}))"`
