@@ -24,6 +24,9 @@ RUN cd web && yarn build
 # 将前端构建产物注入后端静态目录
 RUN rm -rf /workspace/api/scripts/web && mkdir -p /workspace/api/scripts/web && cp -r /workspace/web/dist/. /workspace/api/scripts/web/
 
+# 构建前端静态资源
+RUN cd app && yarn install --frozen-lockfile && yarn build
+
 # 生产阶段
 FROM node:24-alpine
 

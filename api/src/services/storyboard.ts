@@ -36,7 +36,7 @@ export const storyboardService = {
     await http.delete(`/api/images/${id}`);
   },
 
-  async generateStoryboard(scriptId: number, config?: any): Promise<Image[]> {
+  async generateStoryboard(scriptId: number, config?: Record<string, unknown>): Promise<Image[]> {
     const response = await http.post<ApiResponse<Image[]>>(`/api/scripts/${scriptId}/storyboard/generate`, config);
     return response.data.data;
   },

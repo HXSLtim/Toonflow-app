@@ -13,7 +13,7 @@ import type {
 } from '../types/database';
 
 // API Response wrapper
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   code: number;
   message: string;
   data: T;

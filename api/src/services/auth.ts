@@ -1,5 +1,6 @@
 import { http } from './http';
 import type { ApiResponse, LoginRequest, LoginResponse, RegisterRequest } from './types';
+import type { t_user } from '@/types/database';
 
 export const authService = {
   async login(data: LoginRequest): Promise<LoginResponse> {
@@ -24,8 +25,8 @@ export const authService = {
     http.clearToken();
   },
 
-  async getCurrentUser(): Promise<any> {
-    const response = await http.get<ApiResponse<any>>('/api/auth/me');
+  async getCurrentUser(): Promise<t_user> {
+    const response = await http.get<ApiResponse<t_user>>('/api/auth/me');
     return response.data.data;
   },
 
