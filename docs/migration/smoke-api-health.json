@@ -1,0 +1,1 @@
+{"status":"unhealthy","timestamp":"2026-03-04T12:52:57.311Z","uptime":233,"checks":{"database":{"status":"unhealthy","message":"db.raw is not a function"},"memory":{"status":"healthy","usage":75.79},"disk":{"status":"healthy","usage":0}}}
