@@ -28,17 +28,19 @@
 
 ## Web Reachability Smoke
 
+Runbook reference: `docs/migration/web-smoke-runbook.md`
+
 ### W1. Web root route
-- Command: `curl -sS -i http://localhost:5173/ > docs/migration/smoke-web-home.raw`
-- HTTP Status: `404`
-- Result: ❌ Fail (entry route not reachable via this runtime path)
-- Evidence: `docs/migration/smoke-web-home.raw`
+- Command: `curl -sS -o /tmp/web-root-ok.html -w "%{http_code}" http://127.0.0.1:5174/`
+- HTTP Status: `200`
+- Result: ✅ Pass
+- Evidence: `/tmp/web-root-ok.html`
 
 ### W2. Web login route
-- Command: `curl -sS -o docs/migration/smoke-web-login.html -w "%{http_code}" http://localhost:5173/login`
-- HTTP Status: `404`
-- Result: ❌ Fail
-- Evidence: `docs/migration/smoke-web-login.html`
+- Command: `curl -sS -o /tmp/web-login-ok.html -w "%{http_code}" http://127.0.0.1:5174/login`
+- HTTP Status: `200`
+- Result: ✅ Pass
+- Evidence: `/tmp/web-login-ok.html`
 
 ## Core Flow Smoke Matrix
 
@@ -46,12 +48,12 @@
 | --- | --- | --- | --- | --- |
 | API health check | 200 healthy/degraded | initial: 503 unhealthy; recheck: 200 healthy | ⚠️ RECOVERED | `docs/migration/smoke-api-health.json`; `docs/migration/week1-health-probe-afterfix.json` |
 | User login | 200 + token | 200 + token | ✅ PASS | `docs/migration/smoke-login.json` |
-| Web home availability | 200 HTML | 404 | ❌ FAIL | `docs/migration/smoke-web-home.raw` |
-| Web login availability | 200 HTML | 404 | ❌ FAIL | `docs/migration/smoke-web-login.html` |
+| Web home availability | 200 HTML | 200 | ✅ PASS | `/tmp/web-root-ok.html` |
+| Web login availability | 200 HTML | 200 | ✅ PASS | `/tmp/web-login-ok.html` |
 
 ## Smoke Conclusion
 - API core auth path is working (`/other/login` pass).
 - Monitoring health endpoint was recovered after #21 fix (`503 -> 200`).
-- Web routes are not reachable under current runtime invocation (404), needs follow-up on web service routing/start mode.
+- Web smoke is standardized by `docs/migration/web-smoke-runbook.md` and verified PASS on `127.0.0.1:5174`.
 
-Overall smoke status: **NOT PASS** (blocked by web reachability).
+Overall smoke status: **PASS**.

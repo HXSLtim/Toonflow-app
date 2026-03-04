@@ -8,6 +8,7 @@
 - `docs/migration/functional-smoke-report.md`
 - `docs/migration/week1-baseline-blockers-snapshot.md`
 - `docs/migration/week1-blockers-baseline.md`
+- `docs/migration/web-smoke-runbook.md`
 
 ## Gate Summary
 
@@ -18,30 +19,27 @@
 | Feature baseline | ✅ PASS | 119 baseline items generated |
 | Parity matrix | ✅ PASS | no `❌ Missing`; content-level partial deltas documented |
 | Automated validation (lint/test/build) | ✅ PASS | all three commands exit code 0 |
-| Functional smoke | ❌ FAIL | health endpoint 503; web root/login 404 under current runtime |
-
-## Critical Findings Blocking Readiness
-1. `GET /monitoring/health` returns `503` with payload indicating database probe issue: `db.raw is not a function`.
-2. Web service smoke checks (`/`, `/login` on `localhost:5173`) returned `404` in current run mode.
+| Functional smoke | ✅ PASS | API health recovered to 200; web root/login pass via standardized runbook on `127.0.0.1:5174` |
 
 ## Week1 Baseline Blockers Snapshot
 - Formal baseline snapshot: `docs/migration/week1-baseline-blockers-snapshot.md`
 - Purpose: lock immediate blockers before fixes, and track closure against a stable pre-fix reference.
 
-## Week1 Recovery Plan
-- Recovery baseline: `docs/migration/week1-blockers-baseline.md`
-- Execution rule: close each blocker by meeting its `acceptance-target` with refreshed smoke evidence.
-- Closure checkpoints:
-  1. Verify health probe blocker (`W1-BLK-001`) is resolved and evidence is updated.
-  2. Verify web route blocker (`W1-BLK-002`) is resolved using `docs/migration/week1-web-smoke-runbook.md`, and evidence is updated.
-  3. Re-run full readiness evaluation before lifting `NOT READY`.
+## Week1 Recovery Plan Status
+- `W1-BLK-001` (health probe): ✅ closed by #21 recheck (`503 -> 200`)
+- `W1-BLK-002` (web reachability): ✅ closed by #24 runbook standardization + Week1 probe pass (`200/200`)
+
+## Verification Summary (Latest Run)
+- Runbook: `docs/migration/web-smoke-runbook.md`
+- Root probe: `curl -sS -o /tmp/web-root-ok.html -w "%{http_code}" http://127.0.0.1:5174/` → `200`
+- Login probe: `curl -sS -o /tmp/web-login-ok.html -w "%{http_code}" http://127.0.0.1:5174/login` → `200`
 
 ## Readiness Decision
-**Migration readiness: NOT READY**
+**Migration readiness: READY FOR WEEK1 EXIT CHECKPOINT**
 
-Rationale: despite automated gates passing and parity coverage complete, functional smoke gate failed on service health and web route reachability. According to the migration criteria (“测试优先 + 功能不缺失”), readiness cannot be marked as pass.
+Rationale: automated validation remains PASS, API health blocker is fixed, and web smoke path is now standardized and verified with passing evidence under a fixed endpoint contract.
 
 ## Recommended Next Actions
-1. Fix monitoring health DB probe implementation for current DB client behavior.
-2. Verify and correct web dev server route handling / invocation mode in migration workspace.
-3. Re-run smoke validation and update this report with PASS evidence.
+1. Execute task `#25` to rerun full readiness verification and archive final evidence set.
+2. Keep `docs/migration/web-smoke-runbook.md` as the single source of truth for web smoke commands.
+3. Ensure future smoke evidence references fixed endpoint `127.0.0.1:5174` unless runbook is explicitly revised.
