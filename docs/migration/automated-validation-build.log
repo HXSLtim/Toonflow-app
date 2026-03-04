@@ -1,0 +1,39 @@
+
+> toonflow-workspace@1.0.0 build
+> npm run build:api && npm run build:web
+
+
+> toonflow-workspace@1.0.0 build:api
+> npm --prefix api run build
+
+
+> @toonflow/api@1.0.7 build
+> cross-env NODE_ENV=prod tsx scripts/build.ts
+
+🔨 开始构建...
+
+✅ 后端服务构建完成: build/app.js
+
+🎉 所有构建任务完成!
+
+
+> toonflow-workspace@1.0.0 build:web
+> npm --prefix web run build
+
+
+> @toonflow/web@0.0.0 build
+> tsc -b && vite build
+
+[36mvite v7.3.1 [32mbuilding client environment for production...[36m[39m
+transforming...
+[32m✓[39m 1917 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/[22m[32mindex.html                          [39m[1m[2m  0.73 kB[22m[1m[22m[2m │ gzip:   0.36 kB[22m
+[2mdist/[22m[35massets/css/index-DwGB8F4U.css       [39m[1m[2m 32.39 kB[22m[1m[22m[2m │ gzip:   6.32 kB[22m
+[2mdist/[22m[36massets/js/form-vendor-vWjP8OUJ.js   [39m[1m[2m  0.04 kB[22m[1m[22m[2m │ gzip:   0.06 kB[22m
+[2mdist/[22m[36massets/js/ui-vendor-CFqlKy4o.js     [39m[1m[2m  8.82 kB[22m[1m[22m[2m │ gzip:   3.72 kB[22m
+[2mdist/[22m[36massets/js/state-vendor-DbkyGIX9.js  [39m[1m[2m 37.76 kB[22m[1m[22m[2m │ gzip:  15.16 kB[22m
+[2mdist/[22m[36massets/js/react-vendor-CqD7njDp.js  [39m[1m[2m 98.80 kB[22m[1m[22m[2m │ gzip:  33.39 kB[22m
+[2mdist/[22m[36massets/js/index-35Q4RlwQ.js         [39m[1m[2m371.88 kB[22m[1m[22m[2m │ gzip: 113.34 kB[22m
+[32m✓ built in 4.30s[39m

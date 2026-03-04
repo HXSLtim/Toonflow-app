@@ -1,0 +1,177 @@
+
+> toonflow-workspace@1.0.0 test
+> npm run test:api
+
+
+> toonflow-workspace@1.0.0 test:api
+> npm --prefix api run test
+
+
+> @toonflow/api@1.0.7 test
+> vitest --run
+
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90mC:/Users/a2778/Desktop/Code/Toonflow-app/.worktrees/migration-target/api[39m
+
+ [32m✓[39m src/__tests__/unit/utils/ai.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/__tests__/unit/utils/number2Chinese.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/__tests__/unit/utils/pathResolver.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/__tests__/unit/lib/responseFormat.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/__tests__/unit/routes/login.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m src/__tests__/unit/utils/promptBuilder.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m src/__tests__/unit/types/AppError.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m src/__tests__/unit/utils/imageTools.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 77[2mms[22m[39m
+[90mstderr[2m | src/__tests__/unit/middleware/middleware.test.ts[2m > [22m[2mvalidateFields middleware[2m > [22m[2m应该拒绝无效的 body 数据
+[22m[39m[ [32m'字段 age 无效输入：期望 数字，实际接收 string'[39m ]
+
+ [32m✓[39m src/__tests__/unit/utils/getConfig.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+[90mstderr[2m | src/__tests__/unit/middleware/middleware.test.ts[2m > [22m[2mvalidateFields middleware[2m > [22m[2m应该处理缺失的必填字段
+[22m[39m[ [32m'字段 email 无效输入：期望 string，实际接收 undefined'[39m ]
+
+ [32m✓[39m src/__tests__/unit/middleware/middleware.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m src/__tests__/unit/utils/error.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+[90mstdout[2m | src/__tests__/unit/utils/concurrency.test.ts[2m > [22m[2mConcurrency Utils[2m > [22m[2mretry[2m > [22m[2m应该在失败后重试
+[22m[39m重试 1/3，等待 10ms...
+
+[90mstdout[2m | src/__tests__/unit/utils/concurrency.test.ts[2m > [22m[2mConcurrency Utils[2m > [22m[2mretry[2m > [22m[2m应该在失败后重试
+[22m[39m重试 2/3，等待 20ms...
+
+[90mstdout[2m | src/__tests__/unit/utils/concurrency.test.ts[2m > [22m[2mConcurrency Utils[2m > [22m[2mretry[2m > [22m[2m应该在达到最大重试次数后抛出错误
+[22m[39m重试 1/2，等待 10ms...
+
+[90mstderr[2m | src/__tests__/unit/routes/project.test.ts[2m > [22m[2mProject Routes[2m > [22m[2mPOST /project/addProject[2m > [22m[2m应该验证必填字段
+[22m[39m[
+  [32m'字段 intro 无效输入：期望 string，实际接收 undefined'[39m,
+  [32m'字段 type 无效输入：期望 string，实际接收 undefined'[39m,
+  [32m'字段 artStyle 无效输入：期望 string，实际接收 undefined'[39m,
+  [32m'字段 videoRatio 无效输入：期望 string，实际接收 undefined'[39m
+]
+
+[90mstdout[2m | src/__tests__/unit/utils/concurrency.test.ts[2m > [22m[2mConcurrency Utils[2m > [22m[2mretry[2m > [22m[2m应该在达到最大重试次数后抛出错误
+[22m[39m重试 2/2，等待 20ms...
+
+ [32m✓[39m src/__tests__/unit/routes/project.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 92[2mms[22m[39m
+[90mstdout[2m | src/__tests__/unit/agents/storyboard.test.ts[2m > [22m[2mStoryboard Agent[2m > [22m[2m事件系统[2m > [22m[2m应该在更新片段时触发 segmentsUpdated 事件
+[22m[39m
+[20:47:38] 更新片段数据: 共 2 个片段
+
+
+[90mstdout[2m | src/__tests__/unit/agents/storyboard.test.ts[2m > [22m[2mStoryboard Agent[2m > [22m[2m片段管理[2m > [22m[2m应该能够更新片段数据
+[22m[39m
+[20:47:38] 更新片段数据: 共 2 个片段
+
+
+[90mstdout[2m | src/__tests__/unit/agents/storyboard.test.ts[2m > [22m[2mStoryboard Agent[2m > [22m[2m片段管理[2m > [22m[2m应该能够获取片段数据
+[22m[39m
+[20:47:38] 更新片段数据: 共 1 个片段
+
+
+[90mstdout[2m | src/__tests__/unit/agents/storyboard.test.ts[2m > [22m[2mStoryboard Agent[2m > [22m[2m片段管理[2m > [22m[2m应该能够获取片段数据
+[22m[39m
+[20:47:38] 获取片段数据: 共 1 个片段
+
+
+[90mstdout[2m | src/__tests__/unit/agents/storyboard.test.ts[2m > [22m[2mStoryboard Agent[2m > [22m[2m片段管理[2m > [22m[2m应该在没有片段时返回提示信息
+[22m[39m
+[20:47:38] 获取片段数据: 共 0 个片段
+
+
+[90mstdout[2m | src/__tests__/unit/agents/storyboard.test.ts[2m > [22m[2mStoryboard Agent[2m > [22m[2m分镜管理[2m > [22m[2m应该能够添加分镜
+[22m[39m
+[20:47:38] 更新片段数据: 共 2 个片段
+
+
+[90mstdout[2m | src/__tests__/unit/agents/storyboard.test.ts[2m > [22m[2mStoryboard Agent[2m > [22m[2m分镜管理[2m > [22m[2m应该能够添加分镜
+[22m[39m
+[20:47:38] 添加分镜: 新增: [分镜1(片段1)], 跳过片段: []
+
+
+[90mstdout[2m | src/__tests__/unit/agents/storyboard.test.ts[2m > [22m[2mStoryboard Agent[2m > [22m[2m分镜管理[2m > [22m[2m应该跳过已存在的分镜
+[22m[39m
+[20:47:38] 更新片段数据: 共 2 个片段
+
+
+[90mstdout[2m | src/__tests__/unit/agents/storyboard.test.ts[2m > [22m[2mStoryboard Agent[2m > [22m[2m分镜管理[2m > [22m[2m应该跳过已存在的分镜
+[22m[39m
+[20:47:38] 添加分镜: 新增: [分镜1(片段1)], 跳过片段: []
+
+
+[90mstdout[2m | src/__tests__/unit/agents/storyboard.test.ts[2m > [22m[2mStoryboard Agent[2m > [22m[2m分镜管理[2m > [22m[2m应该跳过已存在的分镜
+[22m[39m
+[20:47:38] 添加分镜: 新增: [], 跳过片段: [1]
+
+
+[90mstdout[2m | src/__tests__/unit/agents/storyboard.test.ts[2m > [22m[2mStoryboard Agent[2m > [22m[2m分镜管理[2m > [22m[2m应该能够更新分镜
+[22m[39m
+[20:47:38] 更新片段数据: 共 2 个片段
+
+
+[90mstdout[2m | src/__tests__/unit/agents/storyboard.test.ts[2m > [22m[2mStoryboard Agent[2m > [22m[2m分镜管理[2m > [22m[2m应该能够更新分镜
+[22m[39m
+[20:47:38] 添加分镜: 新增: [分镜1(片段1)], 跳过片段: []
+
+
+[90mstdout[2m | src/__tests__/unit/agents/storyboard.test.ts[2m > [22m[2mStoryboard Agent[2m > [22m[2m分镜管理[2m > [22m[2m应该能够更新分镜
+[22m[39m
+[20:47:38] 更新分镜: 分镜 1
+
+
+[90mstdout[2m | src/__tests__/unit/agents/storyboard.test.ts[2m > [22m[2mStoryboard Agent[2m > [22m[2m分镜管理[2m > [22m[2m应该能够删除分镜
+[22m[39m
+[20:47:38] 更新片段数据: 共 2 个片段
+
+
+[90mstdout[2m | src/__tests__/unit/agents/storyboard.test.ts[2m > [22m[2mStoryboard Agent[2m > [22m[2m分镜管理[2m > [22m[2m应该能够删除分镜
+[22m[39m
+[20:47:38] 添加分镜: 新增: [分镜1(片段1)], 跳过片段: []
+
+
+[90mstdout[2m | src/__tests__/unit/agents/storyboard.test.ts[2m > [22m[2mStoryboard Agent[2m > [22m[2m分镜管理[2m > [22m[2m应该能够删除分镜
+[22m[39m
+[20:47:38] 删除分镜: 删除: [分镜1], 未找到: [分镜]
+
+
+[90mstdout[2m | src/__tests__/unit/utils/concurrency.test.ts[2m > [22m[2mConcurrency Utils[2m > [22m[2mretry[2m > [22m[2m应该调用重试回调
+[22m[39m重试 1/2，等待 10ms...
+
+[90mstdout[2m | src/__tests__/unit/agents/storyboard.test.ts[2m > [22m[2mStoryboard Agent[2m > [22m[2m分镜管理[2m > [22m[2m应该在删除不存在的分镜时返回提示
+[22m[39m
+[20:47:38] 更新片段数据: 共 2 个片段
+
+
+[90mstdout[2m | src/__tests__/unit/agents/storyboard.test.ts[2m > [22m[2mStoryboard Agent[2m > [22m[2m分镜管理[2m > [22m[2m应该在删除不存在的分镜时返回提示
+[22m[39m
+[20:47:38] 删除分镜: 删除: [分镜], 未找到: [分镜999]
+
+
+[90mstdout[2m | src/__tests__/unit/agents/storyboard.test.ts[2m > [22m[2mStoryboard Agent[2m > [22m[2m数据访问器[2m > [22m[2m应该能够获取片段数据
+[22m[39m
+[20:47:38] 更新片段数据: 共 1 个片段
+
+
+[90mstdout[2m | src/__tests__/unit/agents/storyboard.test.ts[2m > [22m[2mStoryboard Agent[2m > [22m[2m数据访问器[2m > [22m[2m应该能够获取分镜数据
+[22m[39m
+[20:47:38] 更新片段数据: 共 1 个片段
+
+
+[90mstdout[2m | src/__tests__/unit/agents/storyboard.test.ts[2m > [22m[2mStoryboard Agent[2m > [22m[2m数据访问器[2m > [22m[2m应该能够获取分镜数据
+[22m[39m
+[20:47:38] 添加分镜: 新增: [分镜1(片段1)], 跳过片段: []
+
+
+ [32m✓[39m src/__tests__/unit/agents/storyboard.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 56[2mms[22m[39m
+[90mstdout[2m | src/__tests__/unit/utils/concurrency.test.ts[2m > [22m[2mConcurrency Utils[2m > [22m[2mretry[2m > [22m[2m应该使用指数退避
+[22m[39m重试 1/2，等待 100ms...
+
+ [32m✓[39m src/__tests__/unit/utils/cache.test.ts [2m([22m[2m18 tests[22m[2m)[22m[33m 475[2mms[22m[39m
+[90mstdout[2m | src/__tests__/unit/utils/concurrency.test.ts[2m > [22m[2mConcurrency Utils[2m > [22m[2mretry[2m > [22m[2m应该使用指数退避
+[22m[39m重试 2/2，等待 200ms...
+
+ [32m✓[39m src/__tests__/unit/utils/concurrency.test.ts [2m([22m[2m17 tests[22m[2m)[22m[33m 931[2mms[22m[39m
+       [33m[2m✓[22m[39m 应该使用指数退避 [33m 320[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m15 passed[39m[22m[90m (15)[39m
+[2m      Tests [22m [1m[32m147 passed[39m[22m[90m (147)[39m
+[2m   Start at [22m 20:47:37
+[2m   Duration [22m 1.75s[2m (transform 2.77s, setup 0ms, import 5.10s, tests 1.76s, environment 3ms)[22m
+

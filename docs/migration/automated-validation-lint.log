@@ -1,0 +1,20 @@
+
+> toonflow-workspace@1.0.0 lint
+> npm run lint:api && npm run lint:web
+
+
+> toonflow-workspace@1.0.0 lint:api
+> npm --prefix api run lint
+
+
+> @toonflow/api@1.0.7 lint
+> tsc --noEmit
+
+
+> toonflow-workspace@1.0.0 lint:web
+> npm --prefix web run lint
+
+
+> @toonflow/web@0.0.0 lint
+> eslint .
+
